@@ -1,11 +1,22 @@
 // #include <chrono>
 // #include <cstdio>
 #include <iostream>
+#include <map>
 #include <string>
 #include <fstream>
 
+enum Grammar{
+    COMMAND
+};
 
-std::string read_file(char *textfile) {
+std::map<char,Grammar> grammar_map = {
+    {'!', COMMAND}
+};
+
+
+
+
+std::string get_file_contents(char *textfile) {
     std::string tmp_string;
     std::string file_contents;
     std::fstream stream;
@@ -20,18 +31,33 @@ std::string read_file(char *textfile) {
     }else {
         std::cerr << "Failed to open file" << std::endl;
     }
-    
 
     return file_contents;
 }
 
+void read_contents(std::string file_content) {
+    int content_len = file_content.length();
+    int counter = 0;
+
+    for(int i=0;i<content_len;i++){
+        char c = file_content[i];
+        if(c=='!'){
+            counter+=1;
+        }
+    }
+
+    std::cout << "There are " << counter << " bangs" << std::endl;
+
+}
 
 int main(int argc, char **argv) {
-    // printf("Starting program\n");
-    // printf("The name of the file is %s with %d number of chars", argv[1], argc);
     std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
     char *textfile = argv[1];
-    std::string file_content = read_file(textfile);
+    std::string file_content = get_file_contents(textfile);
     std::cout << "File content: " << file_content << std::endl;
+
+    read_contents(file_content);
+
+
     return 0;
 }
