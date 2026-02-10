@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <vector>
 
 enum Grammar{
     COMMAND
@@ -13,8 +14,11 @@ std::map<char,Grammar> grammar_map = {
     {'!', COMMAND}
 };
 
+struct Command {
+    std::string content;    
+};
 
-
+std::map<int, Command> command_map;
 
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
@@ -37,17 +41,35 @@ std::string get_file_contents(char *textfile) {
 
 void read_contents(std::string file_content) {
     int content_len = file_content.length();
-    int counter = 0;
-
+    // int counter = 0;
+    Command command;
+    int k;
     for(int i=0;i<content_len;i++){
         char c = file_content[i];
+        
         if(c=='!'){
-            counter+=1;
+            k=i;
+            while(k<content_len){
+                char tmp_char = file_content[k+1];
+                if(tmp_char=='!'){
+                    i = k;
+                    tmp_char = ' ';
+                    break;
+
+                }
+                command.content+=tmp_char;
+                k+=1;
+                // std::cout << "The command content rn: " << command.content  << std::endl;
+            }
+            command_map[0]= command;
         }
     }
+   
+    
+    std::cout << "This is the command " <<command_map[0].content << std::endl;
 
-    std::cout << "There are " << counter << " bangs" << std::endl;
-
+    
+    
 }
 
 int main(int argc, char **argv) {
