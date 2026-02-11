@@ -56,14 +56,14 @@ std::string get_file_contents(char *textfile) {
     return file_contents;
 }
 
-void lex_content(std::string file_content) {
+std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
     int content_len = file_content.length();
     int k;
     int u;
     int p_idx = 0;
-    int w_idx = 0;
-    char paragraph_inent = '\n';
+    char paragraph_indent = '\n';
     char linespace = ' ';
+    std::vector<DocumentContent::paragraph> content_vec; 
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char current_char = file_content[i];
@@ -87,12 +87,13 @@ void lex_content(std::string file_content) {
         }
         // identify the beginning of a new word
         else if(current_char!=linespace){
+            u=i+1;
             // creating memory for the word content
             std::string word = "";
             // creating word_token for the paragraph vector
             DocumentContent::Token word_token;
 
-            while (u<content_len && file_content[u]!=linespace) {
+            while (u<content_len) {
                 char c = file_content[u];
                 word+=c;
                 if(c==linespace){
@@ -105,16 +106,12 @@ void lex_content(std::string file_content) {
             }
         }
         // identify NP
-        else if (current_char==paragraph_inent) {
-            
+        else if (current_char==paragraph_indent) {
+            p_idx+=1;
         }
     }
-   
-    
-    std::cout << "This is the command " <<command_map[0].data << std::endl;
-
-    
-    
+    content_vec.push_back(DocumentContent::paragraph);
+    return content_vec;
 }
 
 int main(int argc, char **argv) {
