@@ -6,19 +6,42 @@
 #include <fstream>
 #include <vector>
 
+using paragraph = std::vector<std::string>;
+
+std::map<int, paragraph> paragraphs;
+
+
 enum Grammar{
-    COMMAND
+    COMMAND,
+    WORD,
+    PARAGRAPH,
 };
 
-std::map<char,Grammar> grammar_map = {
+std::map<char,Grammar> rules = {
     {'!', COMMAND}
 };
 
-struct Command {
-    std::string content;    
+struct Token {
+    std::string data;
+    Grammar type;
+    Token *next;
 };
 
-std::map<int, Command> command_map;
+struct Word {
+    std::string content;
+    int length;
+    Token *next;
+    int len() {
+        int content_len = content.length();
+        return content_len;
+    }
+};
+
+struct Paragraph {
+    struct Word;
+};
+
+std::map<int, Token> command_map;
 
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
@@ -39,17 +62,20 @@ std::string get_file_contents(char *textfile) {
     return file_contents;
 }
 
-void read_contents(std::string file_content) {
+void lex_content(std::string file_content) {
     int content_len = file_content.length();
-    // int counter = 0;
-    Command command;
     int k;
+    int u;
+    char paragraph_inent = '\n';
+    char linespace = ' ';
+    // start reading the file here
     for(int i=0;i<content_len;i++){
         char c = file_content[i];
-        
+        // identify the beginning of a command
         if(c=='!'){
-            k=i;
-            while(k<content_len){
+            Token command;
+            k=i+1;
+            while(k<content_len && file_content[k]!='!'){
                 char tmp_char = file_content[k+1];
                 if(tmp_char=='!'){
                     i = k;
@@ -57,16 +83,30 @@ void read_contents(std::string file_content) {
                     break;
 
                 }
-                command.content+=tmp_char;
+                command.data+=tmp_char;
                 k+=1;
                 // std::cout << "The command content rn: " << command.content  << std::endl;
             }
             command_map[0]= command;
         }
+        // identify the beginning of a new word
+        else if(c==linespace){
+            while (u<content_len) {
+                char c = file_content[u];
+                if(c==linespace){
+                    i = u+1;
+                    break;
+                }
+            }
+        }
+        // identify NP
+        else if (c==paragraph_inent) {
+            
+        }
     }
    
     
-    std::cout << "This is the command " <<command_map[0].content << std::endl;
+    std::cout << "This is the command " <<command_map[0].data << std::endl;
 
     
     
@@ -78,7 +118,7 @@ int main(int argc, char **argv) {
     std::string file_content = get_file_contents(textfile);
     std::cout << "File content: " << file_content << std::endl;
 
-    read_contents(file_content);
+    lex_content(file_content);
 
 
     return 0;
