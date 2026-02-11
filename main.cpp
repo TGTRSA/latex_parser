@@ -6,11 +6,6 @@
 #include <fstream>
 #include <vector>
 
-using paragraph = std::vector<std::string>;
-
-std::map<int, paragraph> paragraphs;
-
-
 enum Grammar{
     COMMAND,
     WORD,
@@ -25,21 +20,20 @@ struct Token {
     std::string data;
     Grammar type;
     Token *next;
-};
-
-struct Word {
-    std::string content;
-    int length;
-    Token *next;
     int len() {
-        int content_len = content.length();
+        int content_len = data.length();
         return content_len;
     }
 };
 
-struct Paragraph {
-    struct Word;
-};
+namespace DocumentContent{ 
+    // the token (word, command, etc)
+    using Token = ::Token;
+    // paragraph being a collection of strings
+    using paragraph = std::vector<Token>;
+    // paragraphs being a collection of "paragraphs"
+    std::map<int, paragraph> paragraphs;
+}
 
 std::map<int, Token> command_map;
 
@@ -66,13 +60,15 @@ void lex_content(std::string file_content) {
     int content_len = file_content.length();
     int k;
     int u;
+    int p_idx = 0;
+    int w_idx = 0;
     char paragraph_inent = '\n';
     char linespace = ' ';
     // start reading the file here
     for(int i=0;i<content_len;i++){
-        char c = file_content[i];
+        char current_char = file_content[i];
         // identify the beginning of a command
-        if(c=='!'){
+        if(current_char=='!'){
             Token command;
             k=i+1;
             while(k<content_len && file_content[k]!='!'){
@@ -90,17 +86,26 @@ void lex_content(std::string file_content) {
             command_map[0]= command;
         }
         // identify the beginning of a new word
-        else if(c==linespace){
-            while (u<content_len) {
+        else if(current_char!=linespace){
+            // creating memory for the word content
+            std::string word = "";
+            // creating word_token for the paragraph vector
+            DocumentContent::Token word_token;
+
+            while (u<content_len && file_content[u]!=linespace) {
                 char c = file_content[u];
+                word+=c;
                 if(c==linespace){
+                    word_token.data = word; 
+                    DocumentContent::paragraphs[p_idx].push_back(word_token);
                     i = u+1;
                     break;
                 }
+                u+=1;
             }
         }
         // identify NP
-        else if (c==paragraph_inent) {
+        else if (current_char==paragraph_inent) {
             
         }
     }
