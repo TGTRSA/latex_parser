@@ -123,13 +123,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
     return content_vec;
 }
 
-int main(int argc, char **argv) {
-    std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
-    char *textfile = argv[1];
-    std::string file_content = get_file_contents(textfile);
-    std::cout << "File content: " << file_content << std::endl;
-
-    std::vector<DocumentContent::paragraph> lexed_content =  lex_content(file_content);
+void parse(std::vector<DocumentContent::paragraph> lexed_content){
     int n = lexed_content.size();
     std::string string_len(1, n);
     std::cout << "Number of paragraphs: " << string_len << std::endl; 
@@ -143,6 +137,16 @@ int main(int argc, char **argv) {
             std::cout << buff.data;
         }
     }
+}
+
+int main(int argc, char **argv) {
+    std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
+    char *textfile = argv[1];
+    std::string file_content = get_file_contents(textfile);
+    std::cout << "File content: " << file_content << std::endl;
+
+    std::vector<DocumentContent::paragraph> lexed_content =  lex_content(file_content);
+    parse(lexed_content);
 
     return 0;
 }
