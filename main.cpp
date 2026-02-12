@@ -12,9 +12,7 @@ enum Grammar{
     PARAGRAPH,
 };
 
-std::map<char,Grammar> rules = {
-    {'!', COMMAND}
-};
+std::vector<std::string> rules_arr;
 
 struct Token {
     std::string data;
@@ -26,14 +24,16 @@ struct Token {
     }
 };
 
-namespace DocumentContent{ 
+namespace DocumentContent { 
     // the token (word, command, etc)
     using Token = ::Token;
     // paragraph being a collection of strings
     using paragraph = std::vector<Token>;
     // paragraphs being a collection of "paragraphs"
-    std::map<int, paragraph> paragraphs;
+    std::map<int, paragraph> paragraphs ;
 }
+
+
 
 std::map<int, Token> command_map;
 
@@ -69,17 +69,20 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
         char current_char = file_content[i];
         // identify the beginning of a command
         if(current_char=='!'){
+            std::string command_str;
             Token command;
             k=i+1;
             while(k<content_len && file_content[k]!='!'){
                 char tmp_char = file_content[k+1];
+                
                 if(tmp_char=='!'){
+                    command.data+= command_str;
+                    command.type = COMMAND;    
                     i = k;
                     tmp_char = ' ';
                     break;
-
                 }
-                command.data+=tmp_char;
+                command_str+=tmp_char;
                 k+=1;
                 // std::cout << "The command content rn: " << command.content  << std::endl;
             }
@@ -87,7 +90,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
         }
         // identify the beginning of a new word
         else if(current_char!=linespace){
-            u=i+1;
+            u=i;
             // creating memory for the word content
             std::string word = "";
             // creating word_token for the paragraph vector
@@ -98,6 +101,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
                 word+=c;
                 if(c==linespace){
                     word_token.data = word; 
+                    word_token.type = WORD;
                     DocumentContent::paragraphs[p_idx].push_back(word_token);
                     i = u+1;
                     break;
@@ -110,7 +114,10 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
             p_idx+=1;
         }
     }
-    content_vec.push_back(DocumentContent::paragraph);
+    int n = DocumentContent::paragraphs.size();
+    for(int i=0;i<n;i++){
+        content_vec.push_back(DocumentContent::paragraphs[i]);
+    }
     return content_vec;
 }
 
@@ -120,8 +127,20 @@ int main(int argc, char **argv) {
     std::string file_content = get_file_contents(textfile);
     std::cout << "File content: " << file_content << std::endl;
 
-    lex_content(file_content);
-
+    std::vector<DocumentContent::paragraph> lexed_content =  lex_content(file_content);
+    int n = lexed_content.size();
+    std::string string_len(1, n);
+    std::cout << "Number of paragraphs: " << string_len << std::endl; 
+    // int p_indx=0;
+    for(int p_indx =0;p_indx<n;p_indx++){
+        int len_paragraph = lexed_content[p_indx].size();
+        std::cout << "Length of paragraph: " << len_paragraph << std::endl;
+        
+        for(int token_indx=0;token_indx<len_paragraph; token_indx++){
+            Token buff = lexed_content[p_indx][token_indx];
+            std::cout << buff.data;
+        }
+    }
 
     return 0;
 }
