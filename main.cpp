@@ -12,6 +12,11 @@ enum Grammar{
     WORD,
 };
 
+std::map<Grammar,std::string> grammar_map ={
+    {COMMAND, "COMMAND"},
+    {WORD, "TEXT"}
+};
+
 std::vector<std::string> rules_arr;
 
 struct Token {
