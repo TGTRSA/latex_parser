@@ -8,6 +8,13 @@
 #include <vector>
 #include <sstream>
 
+// *** [TODO]:
+// * []          Recognise block equation
+// * []          Construct the full document
+// * []          Write latex compile pipeline
+// * []          Impliment writing only differences instead of while document
+// //
+
 enum Grammar{
     INLINE_COMMAND,
     BLOCK_EQ,
@@ -40,21 +47,29 @@ struct Latex {
     std::vector<std::string> doc_content;
 
    void construct_tex(std::vector<TokenContent::paragraph> ll){
-        int len_arr = ll.size();
-        int p_indx = 0;
-        int t_indx = 0;    
+        int len_arr = ll.size(); 
 
-        for(int i=0;i<len_arr;i++){
-            int len_paragraph = ll[i].size();
+        for(int p_idx=0;p_idx<len_arr;p_idx++){
+            int len_paragraph = ll[p_idx].size();
             
-            for(int j=0;j<len_paragraph;j++){
-                Token& buf = ll[i][j];
-                if(buf.type == WORD){
-                    this->doc_content.push_back(buf.data);
-                }else if (buf.type == INLINE_COMMAND) {
-                    std::stringstream ss;
-                    ss << "$ " << buf.data << " $";
-                    this->doc_content.push_back(ss.str());
+            for(int token_indx=0;token_indx<len_paragraph;token_indx++){
+                Token& buf = ll[p_idx][token_indx];
+                switch (buf.type) {
+                    case WORD:
+                        {
+                            this->doc_content.push_back(buf.data);
+                        }
+                    case INLINE_COMMAND:
+                        {   std::stringstream ss;
+                            ss << "$ " << buf.data << " $";
+                            this->doc_content.push_back(ss.str());
+                        }
+                    case BLOCK_EQ:
+                        {
+                            std::stringstream block_equation;
+                            block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
+                            this->doc_content.push_back(block_equation.str());
+                        }    
                 }
             }
         }
@@ -126,7 +141,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 k+=1;
                 // std::cout << "The command content rn: " << command.content  << std::endl;
             }
-            command_map[0]= command;
+            // command_map[0]= command;
         }
         // identify the beginning of a new word
         else if(current_char!=linespace && current_char!=inline_command_start){
@@ -148,6 +163,26 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 }
                 u+=1;
             }
+        }else if (current_char==block_command_start) {
+            std::string command_str;
+            Token command;
+            k=i+1;
+            while(k<content_len && file_content[k]!=block_command_start){
+                char tmp_char = file_content[k+1];
+                
+                if(tmp_char==inline_command_start){
+                    command.data+= command_str;
+                    command.type = BLOCK_EQ;    
+                    TokenContent::paragraphs[p_idx].push_back(command);
+                    i = k;
+                    tmp_char = ' ';
+                    break;
+                }
+                command_str+=tmp_char;
+                k+=1;
+                // std::cout << "The command content rn: " << command.content  << std::endl;
+            }
+            // command_map[0]= command;
         }
         // identify NP
         else if (current_char==paragraph_indent) {
@@ -160,9 +195,6 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     }
     return content_vec;
 }
-
-
-
 
 std::vector<TokenContent::paragraph> parse(std::vector<TokenContent::paragraph> lexed_content){
     int n = lexed_content.size();
@@ -192,6 +224,8 @@ std::vector<TokenContent::paragraph> parse(std::vector<TokenContent::paragraph> 
         }
     }
     // std::cout << "lexed_content[0][1].right->data: " << lexed_content[0][0].right->data << std::endl;
+    // ? Maybe research the methods used for storing tokens even tho the linked list seems efficient
+    // ! Important : This is a linked list not just lexed content so treat it that way
     return lexed_content;    
 }
 
