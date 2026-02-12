@@ -103,7 +103,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
                     word_token.data = word; 
                     word_token.type = WORD;
                     DocumentContent::paragraphs[p_idx].push_back(word_token);
-                    i = u+1;
+                    i = u;
                     break;
                 }
                 u+=1;
