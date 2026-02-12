@@ -6,18 +6,14 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
 enum Grammar{
-    COMMAND,
+    INLINE_COMMAND,
+    BLOCK_EQ,
     WORD,
 };
 
-std::map<Grammar,std::string> grammar_map ={
-    {COMMAND, "COMMAND"},
-    {WORD, "TEXT"}
-};
-
-std::vector<std::string> rules_arr;
 
 struct Token {
     Token *right     = nullptr;
@@ -40,9 +36,41 @@ namespace TokenContent {
     std::map<int, paragraph> paragraphs ;
 }
 
+struct Latex {
+    std::vector<std::string> doc_content;
 
+   void construct_tex(std::vector<TokenContent::paragraph> ll){
+        int len_arr = ll.size();
+        int p_indx = 0;
+        int t_indx = 0;    
+
+        for(int i=0;i<len_arr;i++){
+            int len_paragraph = ll[i].size();
+            
+            for(int j=0;j<len_paragraph;j++){
+                Token& buf = ll[i][j];
+                if(buf.type == WORD){
+                    this->doc_content.push_back(buf.data);
+                }else if (buf.type == INLINE_COMMAND) {
+                    std::stringstream ss;
+                    ss << "$ " << buf.data << " $";
+                    this->doc_content.push_back(ss.str());
+                }
+            }
+        }
+    }
+};
 
 std::map<int, Token> command_map;
+
+std::vector<std::string> rules_arr;
+
+std::map<Grammar,std::string> grammar_map ={
+    {BLOCK_EQ, "BLOCK_COMMAND"},
+    {INLINE_COMMAND, "INLINE_COMMAND"},
+    {WORD, "TEXT"}
+};
+
 
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
@@ -70,22 +98,25 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     int p_idx = 0;
     char paragraph_indent = '\n';
     char linespace = ' ';
+    char inline_command_start = '$';
+    char block_command_start = '!';
+
     std::vector<TokenContent::paragraph> content_vec; 
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char current_char = file_content[i];
         std::cout << "Current char: " << current_char << std::endl;
         // identify the beginning of a command
-        if(current_char=='!'){
+        if(current_char==inline_command_start){
             std::string command_str;
             Token command;
             k=i+1;
-            while(k<content_len && file_content[k]!='!'){
+            while(k<content_len && file_content[k]!=inline_command_start){
                 char tmp_char = file_content[k+1];
                 
-                if(tmp_char=='!'){
+                if(tmp_char==inline_command_start){
                     command.data+= command_str;
-                    command.type = COMMAND;    
+                    command.type = INLINE_COMMAND;    
                     TokenContent::paragraphs[p_idx].push_back(command);
                     i = k;
                     tmp_char = ' ';
@@ -98,7 +129,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             command_map[0]= command;
         }
         // identify the beginning of a new word
-        else if(current_char!=linespace && current_char!='!'){
+        else if(current_char!=linespace && current_char!=inline_command_start){
             u=i;
             // creating memory for the word content
             std::string word = "";
@@ -130,7 +161,10 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     return content_vec;
 }
 
-void parse(std::vector<TokenContent::paragraph> lexed_content){
+
+
+
+std::vector<TokenContent::paragraph> parse(std::vector<TokenContent::paragraph> lexed_content){
     int n = lexed_content.size();
     std::cout << "Number of paragraphs: " << n << std::endl; 
     // int p_indx=0;
@@ -157,7 +191,8 @@ void parse(std::vector<TokenContent::paragraph> lexed_content){
             }
         }
     }
-    std::cout << "lexed_content[0][1].right->data: " << lexed_content[0][0].right->data << std::endl;
+    // std::cout << "lexed_content[0][1].right->data: " << lexed_content[0][0].right->data << std::endl;
+    return lexed_content;    
 }
 
 int main(int argc, char **argv) {
@@ -167,7 +202,9 @@ int main(int argc, char **argv) {
     std::cout << "File content: " << file_content << std::endl;
 
     std::vector<TokenContent::paragraph> content =  lex_content(file_content);
-    parse(content);
+    std::vector<TokenContent::paragraph> linked_list =  parse(content);
+
+
 
     return 0;
 }
