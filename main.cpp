@@ -67,6 +67,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char current_char = file_content[i];
+        std::cout << "Current char: " << current_char << std::endl;
         // identify the beginning of a command
         if(current_char=='!'){
             std::string command_str;
@@ -78,6 +79,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
                 if(tmp_char=='!'){
                     command.data+= command_str;
                     command.type = COMMAND;    
+                    DocumentContent::paragraphs[p_idx].push_back(command);
                     i = k;
                     tmp_char = ' ';
                     break;
@@ -89,7 +91,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
             command_map[0]= command;
         }
         // identify the beginning of a new word
-        else if(current_char!=linespace){
+        else if(current_char!=linespace && current_char!='!'){
             u=i;
             // creating memory for the word content
             std::string word = "";
