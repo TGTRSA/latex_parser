@@ -1,5 +1,6 @@
 // #include <chrono>
 // #include <cstdio>
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -9,22 +10,23 @@
 enum Grammar{
     COMMAND,
     WORD,
-    PARAGRAPH,
 };
 
 std::vector<std::string> rules_arr;
 
 struct Token {
+    Token *right     = nullptr;
+    Token *left      = nullptr;
     std::string data;
     Grammar type;
-    Token *next;
+   
     int len() {
         int content_len = data.length();
         return content_len;
     }
 };
 
-namespace DocumentContent { 
+namespace TokenContent { 
     // the token (word, command, etc)
     using Token = ::Token;
     // paragraph being a collection of strings
@@ -56,14 +58,14 @@ std::string get_file_contents(char *textfile) {
     return file_contents;
 }
 
-std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
+std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     int content_len = file_content.length();
     int k;
     int u;
     int p_idx = 0;
     char paragraph_indent = '\n';
     char linespace = ' ';
-    std::vector<DocumentContent::paragraph> content_vec; 
+    std::vector<TokenContent::paragraph> content_vec; 
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char current_char = file_content[i];
@@ -79,7 +81,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
                 if(tmp_char=='!'){
                     command.data+= command_str;
                     command.type = COMMAND;    
-                    DocumentContent::paragraphs[p_idx].push_back(command);
+                    TokenContent::paragraphs[p_idx].push_back(command);
                     i = k;
                     tmp_char = ' ';
                     break;
@@ -96,7 +98,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
             // creating memory for the word content
             std::string word = "";
             // creating word_token for the paragraph vector
-            DocumentContent::Token word_token;
+            TokenContent::Token word_token;
 
             while (u<content_len) {
                 char c = file_content[u];
@@ -104,7 +106,7 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
                 if(c==linespace){
                     word_token.data = word; 
                     word_token.type = WORD;
-                    DocumentContent::paragraphs[p_idx].push_back(word_token);
+                    TokenContent::paragraphs[p_idx].push_back(word_token);
                     i = u;
                     break;
                 }
@@ -116,27 +118,41 @@ std::vector<DocumentContent::paragraph> lex_content(std::string file_content) {
             p_idx+=1;
         }
     }
-    int n = DocumentContent::paragraphs.size();
+    int n = TokenContent::paragraphs.size();
     for(int i=0;i<n;i++){
-        content_vec.push_back(DocumentContent::paragraphs[i]);
+        content_vec.push_back(TokenContent::paragraphs[i]);
     }
     return content_vec;
 }
 
-void parse(std::vector<DocumentContent::paragraph> lexed_content){
+void parse(std::vector<TokenContent::paragraph> lexed_content){
     int n = lexed_content.size();
-    std::string string_len(1, n);
-    std::cout << "Number of paragraphs: " << string_len << std::endl; 
+    std::cout << "Number of paragraphs: " << n << std::endl; 
     // int p_indx=0;
     for(int p_indx =0;p_indx<n;p_indx++){
         int len_paragraph = lexed_content[p_indx].size();
         std::cout << "Length of paragraph: " << len_paragraph << std::endl;
         
         for(int token_indx=0;token_indx<len_paragraph; token_indx++){
-            Token buff = lexed_content[p_indx][token_indx];
-            std::cout << buff.data;
+            
+            std::cout <<" Current token: " << lexed_content[p_indx][token_indx].data << std::endl;
+
+            if(lexed_content[p_indx][token_indx].left==nullptr){
+                // set a left Token
+                if((token_indx-1)!=-1){                    
+                    lexed_content[p_indx][token_indx].left = &lexed_content[p_indx][token_indx-1];    
+                }
+
+            }if(lexed_content[p_indx][token_indx].right==nullptr){
+                // set right token
+                if((token_indx)!=len_paragraph-1){
+                    
+                    lexed_content[p_indx][token_indx].right =&lexed_content[p_indx][token_indx+1];
+                } 
+            }
         }
     }
+    std::cout << "lexed_content[0][1].right->data: " << lexed_content[0][0].right->data << std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -145,8 +161,8 @@ int main(int argc, char **argv) {
     std::string file_content = get_file_contents(textfile);
     std::cout << "File content: " << file_content << std::endl;
 
-    std::vector<DocumentContent::paragraph> lexed_content =  lex_content(file_content);
-    parse(lexed_content);
+    std::vector<TokenContent::paragraph> content =  lex_content(file_content);
+    parse(content);
 
     return 0;
 }
