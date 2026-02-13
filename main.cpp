@@ -1,6 +1,6 @@
 // #include <chrono>
 // #include <cstdio>
-
+#include "useful_funcs.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -10,15 +10,23 @@
 
 // *** [TODO]:
 // * []          Recognise block equation
+// * []          Write equation block
+// * []          Write inline
+// * []          Add support for more libs - chemfig etc ...
 // * []          Construct the full document
 // * []          Write latex compile pipeline
 // * []          Impliment writing only differences instead of while document
-// //
 
 enum Grammar{
-    INLINE_COMMAND,
+    INLINE_EQ,
     BLOCK_EQ,
     WORD,
+};
+
+//  for final document
+namespace Document {
+    using paragraphs = std::vector<std::vector<std::string>>;
+    using paragraph  = std::vector<std::string>; 
 };
 
 
@@ -34,6 +42,7 @@ struct Token {
     }
 };
 
+// for lexing and parsing
 namespace TokenContent { 
     // the token (word, command, etc)
     using Token = ::Token;
@@ -44,48 +53,75 @@ namespace TokenContent {
 }
 
 struct Latex {
-    std::vector<std::string> doc_content;
+    Document::paragraphs doc_content;
 
-   void construct_tex(std::vector<TokenContent::paragraph> ll){
-        int len_arr = ll.size(); 
-
-        for(int p_idx=0;p_idx<len_arr;p_idx++){
-            int len_paragraph = ll[p_idx].size();
-            
+    //  takes the linked list and turns the code inside of into the latex_code and appends to string vector 
+    void construct_tex(std::vector<TokenContent::paragraph> token_linked_list){
+        int len_arr = token_linked_list.size(); 
+        
+        for(int p_indx=0;p_indx<len_arr;p_indx++){
+            int len_paragraph = token_linked_list[p_indx].size();
+            std::cout << "Length of paragraph: " << len_paragraph << std::endl;
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
-                Token& buf = ll[p_idx][token_indx];
+                Token& buf = token_linked_list[p_indx][token_indx];
+                std::cout << "[X] Got token from fake linked list" <<std::endl;
+                // ![FIX]: BUG with allocation issue
                 switch (buf.type) {
                     case WORD:
-                        {
-                            this->doc_content.push_back(buf.data);
+                        {                       
+                            std::cout << "Attempting to append to doc_content" << std::endl; 
+                            this->doc_content[p_indx].push_back(buf.data);
+                            break;
                         }
-                    case INLINE_COMMAND:
-                        {   std::stringstream ss;
+                    case INLINE_EQ:
+                        {   
+                            std::stringstream ss;
                             ss << "$ " << buf.data << " $";
-                            this->doc_content.push_back(ss.str());
+                            this->doc_content[p_indx].push_back(ss.str());
+                            break;
                         }
                     case BLOCK_EQ:
                         {
                             std::stringstream block_equation;
                             block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
-                            this->doc_content.push_back(block_equation.str());
-                        }    
-                }
+                            this->doc_content[p_indx].push_back(block_equation.str());
+                            break;
+                        }
+                    }
             }
         }
     }
+
+
+    void print() {
+        int latex_code_len = this->doc_content.size();
+        for(int p_indx = 0;p_indx<latex_code_len;p_indx++){
+            int len_paragraph = this->doc_content[p_indx].size();
+
+            for(int word_indx=0;word_indx<len_paragraph;word_indx++){
+                std::string str_buf = this->doc_content[p_indx][word_indx];
+                std::cout << str_buf;
+            }
+            print_nl();
+        }
+    }
+
 };
 
 std::map<int, Token> command_map;
 
 std::vector<std::string> rules_arr;
 
-std::map<Grammar,std::string> grammar_map ={
-    {BLOCK_EQ, "BLOCK_COMMAND"},
-    {INLINE_COMMAND, "INLINE_COMMAND"},
-    {WORD, "TEXT"}
+std::map<const char, Grammar> symbols_lookup_table = {
+    {'!',BLOCK_EQ},
+    {'$', INLINE_EQ}
 };
 
+std::map<Grammar,std::string> grammar_map ={
+    {BLOCK_EQ,"BLOCK_COMMAND"},
+    {INLINE_EQ, "INLINE_COMMAND"},
+    {WORD, "TEXT"}
+};
 
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
@@ -131,7 +167,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 
                 if(tmp_char==inline_command_start){
                     command.data+= command_str;
-                    command.type = INLINE_COMMAND;    
+                    command.type = INLINE_EQ;    
                     TokenContent::paragraphs[p_idx].push_back(command);
                     i = k;
                     tmp_char = ' ';
@@ -237,8 +273,12 @@ int main(int argc, char **argv) {
 
     std::vector<TokenContent::paragraph> content =  lex_content(file_content);
     std::vector<TokenContent::paragraph> linked_list =  parse(content);
-
-
+    
+    Latex latex_code;
+    std::cout << "[X] Created latex struct" << std::endl;
+    latex_code.construct_tex( linked_list);
+    // int latex_code_len = latex_code.doc_content.size();
+    latex_code.print();
 
     return 0;
 }
