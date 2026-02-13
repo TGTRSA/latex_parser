@@ -47,8 +47,10 @@ namespace TokenContent {
     // the token (word, command, etc)
     using Token = ::Token;
     // paragraph being a collection of strings
+    // ? This might be a naming issue in that the Token has the paragraph no??? 
     using paragraph = std::vector<Token>;
     // paragraphs being a collection of "paragraphs"
+    // ! Is this even being used??
     std::map<int, paragraph> paragraphs ;
 }
 
@@ -66,36 +68,38 @@ struct Latex {
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
                 std::cout << "[X] Got token from fake linked list" <<std::endl;
-                // ![FIX]: BUG with allocation issue
-                switch (buf.type) {
-                    case WORD:
+                std::cout << "Attempting to append to doc_content" << std::endl;
+                if(buf.type==WORD)
                         {                       
-                            std::cout << "Attempting to append to doc_content" << std::endl; 
+                            // std::cout << "Attempting to append to doc_content" << std::endl; 
                             this->paragraph.push_back(buf.data);
-                            break;
                         }
-                    case INLINE_EQ:
+                else if(buf.type == INLINE_EQ)
                         {   
                             std::stringstream inline_equation;
                             inline_equation << "$ " << buf.data << " $";
+                            
                             std::string inline_equation_string = inline_equation.str();
+                            std::cout << inline_equation_string <<std::endl ;
                             this->paragraph.push_back(inline_equation_string);
-                            break;
+                            
                         }
-                    case BLOCK_EQ:
+                else if(buf.type == BLOCK_EQ) 
                         {
                             std::stringstream block_equation;
                             block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
                             
-                            this->paragraph.push_back(block_equation.str());
-                            break;
+                            std::string block_eq_string = block_equation.str();
+                            std::cout << block_eq_string << std::endl;
+                            this->paragraph.push_back(block_eq_string);
+                            
                         }
                 }
             }
             this->paragraphs_sequence.push_back(this->paragraph);
             
         }
-    }
+    
 
 
     void print() {
@@ -169,6 +173,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             std::string command_str;
             Token command;
             k=i+1;
+            std::cout << "Inline command found at: " << i << " " << file_content[i] << " making k i+1" << k << " wehre the symbol is " << file_content[k] << std::endl;
             while(k<content_len && file_content[k]!=inline_command_start){
                 char tmp_char = file_content[k+1];
                 
@@ -186,8 +191,9 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             }
             // command_map[0]= command;
         }
-        // identify the beginning of a new word
-        else if(current_char!=linespace && current_char!=inline_command_start){
+        // identify the beginning of a word
+        // * THE MORE COMMAND SYNTAX ADDED THE MORE CASES MUST BE INCLUDED
+        else if(current_char!=linespace && current_char!=inline_command_start && current_char!=block_command_start){
             u=i;
             // creating memory for the word content
             std::string word = "";
@@ -272,6 +278,15 @@ std::vector<TokenContent::paragraph> parse(std::vector<TokenContent::paragraph> 
     return lexed_content;    
 }
 
+void print_ll(Token* head){
+    if (typeid(head)!=typeid(nullptr)){
+        // std::cout << head->data << " ";
+        Token *n_head = head->right;
+        print_ll(n_head);
+    }
+
+}
+
 int main(int argc, char **argv) {
     std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
     char *textfile = argv[1];
@@ -280,9 +295,14 @@ int main(int argc, char **argv) {
 
     std::vector<TokenContent::paragraph> content =  lex_content(file_content);
     std::vector<TokenContent::paragraph> linked_list =  parse(content);
-    
+    TokenContent::paragraph ll = linked_list[0];
+    // * This would be p1
+    Token* p_1 = &ll[0];
+    print_ll(p_1);
+    //  something
     Latex latex_code;
     std::cout << "[X] Created latex struct" << std::endl;
+    
     latex_code.construct_tex( linked_list);
     // int latex_code_len = latex_code.doc_content.size();
     latex_code.print();
