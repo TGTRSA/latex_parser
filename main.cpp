@@ -22,13 +22,11 @@ enum Grammar{
     BLOCK_EQ,
     WORD,
 };
-
 //  for final document => arr[i] =  paragraph => arr[i][j] = word
 namespace Document {
     using paragraphs = std::vector<std::vector<std::string>>;
     using paragraph  = std::vector<std::string>; 
 };
-
 
 struct Token {
     Token *right     = nullptr;
@@ -71,7 +69,7 @@ struct Latex {
                 std::cout << "Attempting to append to doc_content" << std::endl;
                 if(buf.type==WORD)
                         {                       
-                            // std::cout << "Attempting to append to doc_content" << std::endl; 
+                             std::cout << buf.data << " is a string" << std::endl; 
                             this->paragraph.push_back(buf.data);
                         }
                 else if(buf.type == INLINE_EQ)
