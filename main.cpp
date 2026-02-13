@@ -23,7 +23,7 @@ enum Grammar{
     WORD,
 };
 
-//  for final document
+//  for final document => arr[i] =  paragraph => arr[i][j] = word
 namespace Document {
     using paragraphs = std::vector<std::vector<std::string>>;
     using paragraph  = std::vector<std::string>; 
@@ -53,7 +53,8 @@ namespace TokenContent {
 }
 
 struct Latex {
-    Document::paragraphs doc_content;
+    Document::paragraphs paragraphs_sequence;
+    Document::paragraph paragraph;
 
     //  takes the linked list and turns the code inside of into the latex_code and appends to string vector 
     void construct_tex(std::vector<TokenContent::paragraph> token_linked_list){
@@ -70,37 +71,43 @@ struct Latex {
                     case WORD:
                         {                       
                             std::cout << "Attempting to append to doc_content" << std::endl; 
-                            this->doc_content[p_indx].push_back(buf.data);
+                            this->paragraph.push_back(buf.data);
                             break;
                         }
                     case INLINE_EQ:
                         {   
-                            std::stringstream ss;
-                            ss << "$ " << buf.data << " $";
-                            this->doc_content[p_indx].push_back(ss.str());
+                            std::stringstream inline_equation;
+                            inline_equation << "$ " << buf.data << " $";
+                            std::string inline_equation_string = inline_equation.str();
+                            this->paragraph.push_back(inline_equation_string);
                             break;
                         }
                     case BLOCK_EQ:
                         {
                             std::stringstream block_equation;
                             block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
-                            this->doc_content[p_indx].push_back(block_equation.str());
+                            
+                            this->paragraph.push_back(block_equation.str());
                             break;
                         }
-                    }
+                }
             }
+            this->paragraphs_sequence.push_back(this->paragraph);
+            
         }
     }
 
 
     void print() {
-        int latex_code_len = this->doc_content.size();
+        std::cout << "Starting print sequence " << std::endl;
+        int latex_code_len = this->paragraphs_sequence.size();
         for(int p_indx = 0;p_indx<latex_code_len;p_indx++){
-            int len_paragraph = this->doc_content[p_indx].size();
+            int len_paragraph = this->paragraphs_sequence[p_indx].size();
 
             for(int word_indx=0;word_indx<len_paragraph;word_indx++){
-                std::string str_buf = this->doc_content[p_indx][word_indx];
+                std::string str_buf = this->paragraphs_sequence[p_indx][word_indx];
                 std::cout << str_buf;
+                
             }
             print_nl();
         }
