@@ -297,8 +297,8 @@ int main(int argc, char **argv) {
     std::vector<TokenContent::paragraph> linked_list =  parse(content);
     TokenContent::paragraph ll = linked_list[0];
     // * This would be p1
-    Token* p_1 = &ll[0];
-    print_ll(p_1);
+    // Token* p_1 = &ll[0];
+    // print_ll(p_1);
     //  something
     Latex latex_code;
     std::cout << "[X] Created latex struct" << std::endl;
