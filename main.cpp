@@ -159,7 +159,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     char paragraph_indent = '\n';
     char linespace = ' ';
     char inline_command_start = '$';
-    char block_command_start = '!';
+    // char block_command_start = '!';
 
     std::vector<TokenContent::paragraph> content_vec; 
     // start reading the file here
@@ -167,19 +167,21 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         char current_char = file_content[i];
         std::cout << "Current char: " << current_char << std::endl;
         // identify the beginning of a command
-        if(current_char==inline_command_start){
+        // ! BUG 
+        if(current_char=='!'){
             std::string command_str;
             Token command;
             k=i+1;
-            std::cout << "Inline command found at: " << i << " " << file_content[i] << " making k i+1" << k << " wehre the symbol is " << file_content[k] << std::endl;
+            std::cout << "Inline command found at: " << i << " " << file_content[i] << " making k i+1 " << k << " where the symbol is " << file_content[k] << std::endl;
             while(k<content_len && file_content[k]!=inline_command_start){
+                std::cout << "Compiling latex command" << std::endl;
                 char tmp_char = file_content[k+1];
-                
-                if(tmp_char==inline_command_start){
+               
+                if(tmp_char=='!'){
                     command.data+= command_str;
                     command.type = INLINE_EQ;    
                     TokenContent::paragraphs[p_idx].push_back(command);
-                    i = k;
+                    i = k + 1;
                     tmp_char = ' ';
                     break;
                 }
@@ -191,7 +193,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         }
         // identify the beginning of a word
         // * THE MORE COMMAND SYNTAX ADDED THE MORE CASES MUST BE INCLUDED
-        else if(current_char!=linespace && current_char!=inline_command_start && current_char!=block_command_start){
+        else if(current_char!=linespace && current_char!=inline_command_start && current_char!='!'){
             u=i;
             // creating memory for the word content
             std::string word = "";
@@ -210,13 +212,13 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 }
                 u+=1;
             }
-        }else if (current_char==block_command_start) {
+        }else if (current_char=='!') {
             std::string command_str;
             Token command;
             k=i+1;
-            while(k<content_len && file_content[k]!=block_command_start){
+            while(k<content_len && file_content[k]!='!'){
                 char tmp_char = file_content[k+1];
-                
+            
                 if(tmp_char==inline_command_start){
                     command.data+= command_str;
                     command.type = BLOCK_EQ;    
@@ -235,6 +237,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         else if (current_char==paragraph_indent) {
             p_idx+=1;
         }
+        std::cout << "i is now: " << i<< std::endl;
     }
     int n = TokenContent::paragraphs.size();
     for(int i=0;i<n;i++){
