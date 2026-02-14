@@ -9,9 +9,9 @@
 #include <sstream>
 
 // *** [TODO]:
-// * []          Recognise block equation
+// * [X]          Recognise block equation
 // * []          Write equation block
-// * []          Write inline
+// * [X]          Write inline
 // * []          Add support for more libs - chemfig etc ...
 // * []          Construct the full document
 // * []          Write latex compile pipeline
@@ -65,8 +65,8 @@ struct Latex {
             std::cout << "Length of paragraph: " << len_paragraph << std::endl;
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
-                std::cout << "[X] Got token from fake linked list" <<std::endl;
-                std::cout << "Attempting to append to doc_content" << std::endl;
+                // std::cout << "[X] Got token from fake linked list" <<std::endl;
+                // std::cout << "Attempting to append to doc_content" << std::endl;
                 if(buf.type==WORD)
                         {                       
                              std::cout << buf.data << " is a string" << std::endl; 
@@ -74,6 +74,7 @@ struct Latex {
                         }
                 else if(buf.type == INLINE_EQ)
                         {   
+                            std::cout << buf.data << " is an inline command" << std::endl;
                             std::stringstream inline_equation;
                             inline_equation << "$ " << buf.data << " $";
                             
@@ -84,6 +85,7 @@ struct Latex {
                         }
                 else if(buf.type == BLOCK_EQ) 
                         {
+                            std::cout << buf.data << " is a block equation" << std::endl;
                             std::stringstream block_equation;
                             block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
                             
@@ -167,14 +169,14 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         char current_char = file_content[i];
         std::cout << "Current char: " << current_char << std::endl;
         // identify the beginning of a command
-        // ! BUG 
+        
         if(current_char=='!'){
             std::string command_str;
             Token command;
             k=i+1;
             std::cout << "Inline command found at: " << i << " " << file_content[i] << " making k i+1 " << k << " where the symbol is " << file_content[k] << std::endl;
             while(k<content_len && file_content[k]!=inline_command_start){
-                std::cout << "Compiling latex command" << std::endl;
+                // std::cout << "Compiling latex command" << std::endl;
                 char tmp_char = file_content[k+1];
                
                 if(tmp_char=='!'){
