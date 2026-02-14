@@ -137,10 +137,11 @@ std::map<Grammar,std::string> grammar_map ={
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
     std::string file_contents;
-    std::fstream stream;
+    std::ifstream stream;
+    char ch;
     stream.open(textfile);
     if(stream.is_open()){
-        while (std::getline(stream,tmp_string)) {
+        while (stream.get(ch)) {
             // printf("This is the contents of the text file:\n%s", file_contents.c_str());
             std::cout << tmp_string << std::endl;
             file_contents += tmp_string;    
@@ -158,7 +159,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     int k;
     int u;
     int p_idx = 0;
-    char paragraph_indent = '\n';
+    // char paragraph_indent = '\n';
     char linespace = ' ';
     char inline_command_start = '$';
     // char block_command_start = '!';
@@ -181,7 +182,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                
                 if(tmp_char=='!'){
                     command.data+= command_str;
-                    command.type = INLINE_EQ;    
+                    command.type = BLOCK_EQ;    
                     TokenContent::paragraphs[p_idx].push_back(command);
                     i = k + 1;
                     tmp_char = ' ';
@@ -214,16 +215,16 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 }
                 u+=1;
             }
-        }else if (current_char=='!') {
+        }else if (current_char=='$') {
             std::string command_str;
             Token command;
             k=i+1;
             while(k<content_len && file_content[k]!='!'){
                 char tmp_char = file_content[k+1];
             
-                if(tmp_char==inline_command_start){
+                if(tmp_char=='$'){
                     command.data+= command_str;
-                    command.type = BLOCK_EQ;    
+                    command.type = INLINE_EQ;    
                     TokenContent::paragraphs[p_idx].push_back(command);
                     i = k;
                     tmp_char = ' ';
@@ -236,7 +237,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             // command_map[0]= command;
         }
         // identify NP
-        else if (current_char==paragraph_indent) {
+        else if (current_char=='\n') {
             p_idx+=1;
         }
         std::cout << "i is now: " << i<< std::endl;
@@ -291,24 +292,36 @@ void print_ll(Token* head){
 }
 
 int main(int argc, char **argv) {
-    std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
-    char *textfile = argv[1];
-    std::string file_content = get_file_contents(textfile);
-    std::cout << "File content: " << file_content << std::endl;
+    // int p= 0;
+    // while(p<10){
+    //     if(argv[p]){
 
-    std::vector<TokenContent::paragraph> content =  lex_content(file_content);
-    std::vector<TokenContent::paragraph> linked_list =  parse(content);
-    TokenContent::paragraph ll = linked_list[0];
-    // * This would be p1
-    // Token* p_1 = &ll[0];
-    // print_ll(p_1);
-    //  something
-    Latex latex_code;
-    std::cout << "[X] Created latex struct" << std::endl;
+    //     }else{
+    //         break;
+    //     }
+    //     p+=1;
+    // }
+    // for(int o=1;o<p;o++){
+        std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
+        char *textfile = argv[1];
+        std::string file_content = get_file_contents(textfile);
+        std::cout << "File content: " << file_content << std::endl;
+
+        std::vector<TokenContent::paragraph> content =  lex_content(file_content);
+        std::vector<TokenContent::paragraph> linked_list =  parse(content);
+        TokenContent::paragraph ll = linked_list[0];
+        // * This would be p1
+        // Token* p_1 = &ll[0];
+        // print_ll(p_1);
+        //  something
+        Latex latex_code;
+        std::cout << "[X] Created latex struct" << std::endl;
+        
+        latex_code.construct_tex( linked_list);
+        // int latex_code_len = latex_code.doc_content.size();
+        latex_code.print();
+    // }
     
-    latex_code.construct_tex( linked_list);
-    // int latex_code_len = latex_code.doc_content.size();
-    latex_code.print();
 
     return 0;
 }
