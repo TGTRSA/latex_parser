@@ -137,16 +137,15 @@ std::map<Grammar,std::string> grammar_map ={
 std::string get_file_contents(char *textfile) {
     std::string tmp_string;
     std::string file_contents;
-    std::ifstream stream;
+    std::ifstream file(textfile);
     char ch;
-    stream.open(textfile);
-    if(stream.is_open()){
-        while (stream.get(ch)) {
+    
+    if(file.is_open()){
+        while (file.get(ch)) {
             // printf("This is the contents of the text file:\n%s", file_contents.c_str());
-            std::cout << tmp_string << std::endl;
-            file_contents += tmp_string;    
-        }
-        
+            std::cout << ch << std::endl;
+            file_contents += ch;    
+        }       
     }else {
         std::cerr << "Failed to open file" << std::endl;
     }
@@ -238,6 +237,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         }
         // identify NP
         else if (current_char=='\n') {
+            std::cout << "Found: '\\n'" << std::endl;
             p_idx+=1;
         }
         std::cout << "i is now: " << i<< std::endl;
