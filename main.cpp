@@ -21,6 +21,7 @@ enum Grammar{
     INLINE_EQ,
     BLOCK_EQ,
     WORD,
+    HEADER,
 };
 //  for final document => arr[i] =  paragraph => arr[i][j] = word
 namespace Document {
@@ -123,10 +124,11 @@ std::map<int, Token> command_map;
 
 std::vector<std::string> rules_arr;
 
-std::map<const char, Grammar> symbols_lookup_table = {
-    {'!',BLOCK_EQ},
-    {'$', INLINE_EQ}
-};
+// std::map<const char, Grammar> symbols_lookup_table = {
+//     {'!', BLOCK_EQ},
+//     {'$', INLINE_EQ},
+//     {'#', HEADER}
+// };
 
 std::map<Grammar,std::string> grammar_map ={
     {BLOCK_EQ,"BLOCK_COMMAND"},
@@ -234,6 +236,21 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                 // std::cout << "The command content rn: " << command.content  << std::endl;
             }
             // command_map[0]= command;
+        }else if (current_char=='#') {
+            Token header_token;
+            std::string header_name;
+            int h = i+1;
+            while (h<content_len) {
+                char tmp_c = file_content[h];
+                if(tmp_c=='\n'){
+                    header_token.data = header_name;
+                    i=h;
+                    tmp_c = ' ';
+                    break;
+                }
+                header_name+=tmp_c;
+                h+=1;
+            }
         }
         // identify NP
         else if (current_char=='\n') {
