@@ -1,3 +1,5 @@
+#ifndef PARSER_H
+#define PARSER_H
 // #include <chrono>
 // #include <cstdio>
 #include "useful_funcs.h"
@@ -325,3 +327,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+#endif
