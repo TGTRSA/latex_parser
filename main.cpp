@@ -68,36 +68,39 @@ struct Latex {
                 Token& buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
                 // std::cout << "Attempting to append to doc_content" << std::endl;
-                if (buf.type==HEADER) {
-                    
+                if (buf.type==HEADER)
+                {
+                    std::cout << buf.data << " is a header" << std::endl;
+                    std::stringstream header;
+                    header << "\\usepackage{" << buf.data << "}" << std::endl; 
                 }
                 else if(buf.type==WORD)
-                        {                       
-                            std::cout << buf.data << " is a string" << std::endl; 
-                            this->paragraph.push_back(buf.data);
-                        }
+                {                       
+                    std::cout << buf.data << " is a string" << std::endl; 
+                    this->paragraph.push_back(buf.data);
+                }
                 else if(buf.type == INLINE_EQ)
-                        {   
-                            std::cout << buf.data << " is an inline command" << std::endl;
-                            std::stringstream inline_equation;
-                            inline_equation << "$ " << buf.data << " $";
-                            
-                            std::string inline_equation_string = inline_equation.str();
-                            std::cout << inline_equation_string <<std::endl ;
-                            this->paragraph.push_back(inline_equation_string);
-                            
-                        }
+                {   
+                    std::cout << buf.data << " is an inline command" << std::endl;
+                    std::stringstream inline_equation;
+                    inline_equation << "$ " << buf.data << " $";
+                    
+                    std::string inline_equation_string = inline_equation.str();
+                    std::cout << inline_equation_string <<std::endl ;
+                    this->paragraph.push_back(inline_equation_string);
+                    
+                }
                 else if(buf.type == BLOCK_EQ) 
-                        {
-                            std::cout << buf.data << " is a block equation" << std::endl;
-                            std::stringstream block_equation;
-                            block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
-                            
-                            std::string block_eq_string = block_equation.str();
-                            std::cout << block_eq_string << std::endl;
-                            this->paragraph.push_back(block_eq_string);
-                            
-                        }
+                {
+                    std::cout << buf.data << " is a block equation" << std::endl;
+                    std::stringstream block_equation;
+                    block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
+                    
+                    std::string block_eq_string = block_equation.str();
+                    std::cout << block_eq_string << std::endl;
+                    this->paragraph.push_back(block_eq_string);
+                    
+                }
                 }
             }
             this->paragraphs_sequence.push_back(this->paragraph);
@@ -266,6 +269,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                     char tmp_c = file_content[h];
                     if(tmp_c=='\n'){
                         header_token.data = header_name;
+                        header_token.type = HEADER;
                         i=h;
                         tmp_c = ' ';
                         break;
