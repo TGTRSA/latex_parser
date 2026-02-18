@@ -73,6 +73,8 @@ struct Latex {
                     std::cout << buf.data << " is a header" << std::endl;
                     std::stringstream header;
                     header << "\\usepackage{" << buf.data << "}" << std::endl; 
+                    std::string header_string = header.str();
+                    this->paragraph.push_back(header_string);
                 }
                 else if(buf.type==WORD)
                 {                       
@@ -163,6 +165,7 @@ std::string get_file_contents(char *textfile) {
 
 bool check_if_header(std::string p_header){
     std::string include = "include";
+    std::cout <<  "Comparing " << p_header << " with " << include << "\n";
     if(p_header==include){
         return true;
     }else{
@@ -256,7 +259,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             // command_map[0]= command;
         }else if (current_char=='#') {
             std::cout << "Found header str??\n"; 
-            int c = i; 
+            int c = i+1; 
             std::string tmp_str;
             std::cout << "c is " <<  c << " at #\n";
             while(file_content[c]!=' '){
@@ -267,7 +270,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             if(is_header){
                 Token header_token;
                 std::string header_name;
-                int h = c;
+                int h = c +1;
                 std::cout << " now c is " << c <<  std::endl;
                 while (h<content_len) {
                     char tmp_c = file_content[h];
