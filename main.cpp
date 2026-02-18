@@ -68,9 +68,12 @@ struct Latex {
                 Token& buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
                 // std::cout << "Attempting to append to doc_content" << std::endl;
-                if(buf.type==WORD)
+                if (buf.type==HEADER) {
+                    
+                }
+                else if(buf.type==WORD)
                         {                       
-                             std::cout << buf.data << " is a string" << std::endl; 
+                            std::cout << buf.data << " is a string" << std::endl; 
                             this->paragraph.push_back(buf.data);
                         }
                 else if(buf.type == INLINE_EQ)
@@ -155,6 +158,15 @@ std::string get_file_contents(char *textfile) {
     return file_contents;
 }
 
+bool check_if_header(std::string p_header){
+    std::string include = "include";
+    if(p_header==include){
+        return true;
+    }else{
+        return  false;
+    }
+}
+
 std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     int content_len = file_content.length();
     int k;
@@ -164,6 +176,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
     char linespace = ' ';
     char inline_command_start = '$';
     // char block_command_start = '!';
+    std::string header_begin = "use_p";
 
     std::vector<TokenContent::paragraph> content_vec; 
     // start reading the file here
@@ -215,8 +228,10 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
                     break;
                 }
                 u+=1;
-            }
-        }else if (current_char=='$') {
+            }    
+        }
+        // cheking for inline equation
+        else if (current_char=='$') {
             std::string command_str;
             Token command;
             k=i+1;
@@ -237,20 +252,31 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             }
             // command_map[0]= command;
         }else if (current_char=='#') {
-            Token header_token;
-            std::string header_name;
-            int h = i+1;
-            while (h<content_len) {
-                char tmp_c = file_content[h];
-                if(tmp_c=='\n'){
-                    header_token.data = header_name;
-                    i=h;
-                    tmp_c = ' ';
-                    break;
-                }
-                header_name+=tmp_c;
-                h+=1;
+            int c = i+1; 
+            std::string tmp_str;
+            while(file_content[c]!=' '){
+                tmp_str+=file_content[c];
             }
+            bool is_header = check_if_header(tmp_str);
+            if(is_header){
+                Token header_token;
+                std::string header_name;
+                int h = i+1;
+                while (h<content_len) {
+                    char tmp_c = file_content[h];
+                    if(tmp_c=='\n'){
+                        header_token.data = header_name;
+                        i=h;
+                        tmp_c = ' ';
+                        break;
+                    }
+                    header_name+=tmp_c;
+                    h+=1;
+                }
+            }else{
+                ;
+            }
+            
         }
         // identify NP
         else if (current_char=='\n') {
