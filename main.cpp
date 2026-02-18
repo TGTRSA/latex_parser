@@ -213,7 +213,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
         }
         // identify the beginning of a word
         // * THE MORE COMMAND SYNTAX ADDED THE MORE CASES MUST BE INCLUDED
-        else if(current_char!=linespace && current_char!=inline_command_start && current_char!='!'){
+        else if(current_char!=linespace && current_char!=inline_command_start && current_char!='!' && current_char !='#'){
             u=i;
             // creating memory for the word content
             std::string word = "";
@@ -255,21 +255,26 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             }
             // command_map[0]= command;
         }else if (current_char=='#') {
-            int c = i+1; 
+            std::cout << "Found header str??\n"; 
+            int c = i; 
             std::string tmp_str;
+            std::cout << "c is " <<  c << " at #\n";
             while(file_content[c]!=' '){
                 tmp_str+=file_content[c];
+                c++;
             }
             bool is_header = check_if_header(tmp_str);
             if(is_header){
                 Token header_token;
                 std::string header_name;
-                int h = i+1;
+                int h = c;
+                std::cout << " now c is " << c <<  std::endl;
                 while (h<content_len) {
                     char tmp_c = file_content[h];
                     if(tmp_c=='\n'){
                         header_token.data = header_name;
                         header_token.type = HEADER;
+                        TokenContent::paragraphs[p_idx].push_back(header_token);
                         i=h;
                         tmp_c = ' ';
                         break;
