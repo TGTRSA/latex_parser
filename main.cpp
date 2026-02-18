@@ -12,8 +12,8 @@
 // * [X]          Recognise block equation
 // * [X]          Write equation block
 // * [X]          Write inline
-// * []          Add support for more libs - chemfig etc ...
-// * []          Construct the full document
+// * [X]          Add support for more libs - chemfig etc ...
+// * [X]          Construct the full document
 // * []          Write latex compile pipeline
 // * []          Impliment writing only differences instead of while document
 
