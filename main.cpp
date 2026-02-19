@@ -17,6 +17,8 @@
 // * []          Write latex compile pipeline
 // * []          Impliment writing only differences instead of while document
 
+
+
 enum Grammar{
     INLINE_EQ,
     BLOCK_EQ,
@@ -34,6 +36,7 @@ struct Token {
     Token *left      = nullptr;
     std::string data;
     Grammar type;
+    int pos;
    
     int len() {
         int content_len = data.length();
@@ -173,7 +176,7 @@ bool check_if_header(std::string p_header){
     }
 }
 
-int handle_block_eq(int c_idx, int p_idx, int content_len, std::string file_content) {
+Token handle_block_eq(int c_idx, int content_len, std::string file_content) {
     std::string command_str;
     Token command;
     int k=c_idx+1;
@@ -185,8 +188,8 @@ int handle_block_eq(int c_idx, int p_idx, int content_len, std::string file_cont
         if(tmp_char=='!'){
             command.data+= command_str;
             command.type = BLOCK_EQ;    
-            TokenContent::paragraphs[p_idx].push_back(command);
-            c_idx = k + 1;
+            
+            command.pos = k + 1;
             tmp_char = ' ';
             break;
         }
@@ -194,11 +197,11 @@ int handle_block_eq(int c_idx, int p_idx, int content_len, std::string file_cont
         k+=1;
         // std::cout << "The command content rn: " << command.content  << std::endl;
     }
-    return c_idx;
+    return command;
 
 }
 
-int handle_inline_eq(int c_idx, int p_idx, int content_len, std::string file_content){
+Token handle_inline_eq(int c_idx, int content_len, std::string file_content){
     std::string command_str;
     Token command;
     int k=c_idx+1;
@@ -208,8 +211,8 @@ int handle_inline_eq(int c_idx, int p_idx, int content_len, std::string file_con
         if(tmp_char=='$'){
             command.data+= command_str;
             command.type = INLINE_EQ;    
-            TokenContent::paragraphs[p_idx].push_back(command);
-            c_idx = k;
+            
+            command.pos = k;
             tmp_char = ' ';
             break;
         }
@@ -218,10 +221,11 @@ int handle_inline_eq(int c_idx, int p_idx, int content_len, std::string file_con
         // std::cout << "The command content rn: " << command.content  << std::endl;
     }
     // command_map[0]= command;
-    return c_idx;
+    return command;
 }
 
-int handle_header(int c_idx, int p_idx, int content_len,  std::string file_content) {
+Token handle_header(int c_idx, int content_len,  std::string file_content) {
+    Token header_token;
     std::cout << "Found header str??\n"; 
     int c = c_idx+1; 
     std::string tmp_str;
@@ -232,28 +236,28 @@ int handle_header(int c_idx, int p_idx, int content_len,  std::string file_conte
     }
     bool is_header = check_if_header(tmp_str);
     if(is_header){
-        Token header_token;
+        
         std::string header_name;
         int h = c_idx +1;
-        std::cout << " now c is " << c << ": " << file_content[h] <<  std::endl;
-        while (h<content_len) {
+        std::cout << " now c is " << c << ": " << file_content[h+1] <<  std::endl;
+        while (h<content_len-2) {
             char tmp_c = file_content[h];
+            std::cout << "Printing tmp_char: " << tmp_c << std::endl;
             if(tmp_c=='\n'){
                 header_token.data = header_name;
                 header_token.type = HEADER;
-                TokenContent::paragraphs[p_idx].push_back(header_token);
-                c_idx=h;
+                
                 tmp_c = ' ';
                 break;
             }
             header_name+=tmp_c;
-            h+=1;
+            h++;
         }
     }
-    return c_idx;
+    return header_token;
 }
 
-int handle_word(int c_idx,int p_idx, int content_len, const std::string &file_content ) {
+Token handle_word(int c_idx, int content_len, const std::string &file_content ) {
     int u=c_idx;
     // creating memory for the word content
     std::string word = "";
@@ -266,18 +270,18 @@ int handle_word(int c_idx,int p_idx, int content_len, const std::string &file_co
         if(c==' '){
             word_token.data = word; 
             word_token.type = WORD;
-            TokenContent::paragraphs[p_idx].push_back(word_token);
-            c_idx = u;
+            
+            word_token.pos = u;
             break;
         }
         u+=1;
     }   
-    return c_idx;
+    return word_token;
 }
 
 std::vector<TokenContent::paragraph> lex_content(const std::string &file_content) {
     std::vector<TokenContent::paragraph> paragraphs;
-    paragraphs.emplace_back(); // start first paragraph
+    // paragraphs.emplace_back(); // start first paragraph
     int content_len = file_content.length();
     int p_idx = 0;
     // char paragraph_indent = '\n';
@@ -296,17 +300,26 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
 
             switch (c) {
                 case '!':
-                    i = handle_block_eq(i, p_idx, content_len, file_content);
+                {
+                    Token block_command_token = handle_header(i, content_len, file_content);
+                    i = block_command_token.pos;
+                    TokenContent::paragraphs[p_idx].push_back(block_command_token);
                     break;
-
+                }
                 case '$':
-                    i = handle_inline_eq(i, p_idx, content_len, file_content);
+                {
+                    Token inline_command = handle_header(i, content_len, file_content);
+                    i = inline_command.pos;
+                    TokenContent::paragraphs[p_idx].push_back(inline_command);
                     break;
-
+                }
                 case '#':
-                    i = handle_header(i, p_idx, content_len, file_content);
+                {
+                    Token header_token = handle_header(i, content_len, file_content);
+                    i = header_token.pos;
+                    TokenContent::paragraphs[p_idx].push_back(header_token);
                     break;
-
+                }
                 case '\n':
                     ++p_idx;
                     break;
@@ -315,8 +328,12 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
                     break;  // ignore spaces
 
                 default:
-                    i = handle_word(i, p_idx, content_len, file_content);
+                {
+                    Token word_token = handle_header(i, content_len, file_content);
+                    i = word_token.pos;
+                    TokenContent::paragraphs[p_idx].push_back(word_token);
                     break;
+                }
                 }   
             }
         }
