@@ -173,7 +173,7 @@ bool check_if_header(std::string p_header){
     }
 }
 
-int handle_block_eq(int c_idx, int p_idx, int content_len, const std::string  &file_content) {
+int handle_block_eq(int c_idx, int p_idx, int content_len, std::string file_content) {
     std::string command_str;
     Token command;
     int k=c_idx+1;
@@ -198,7 +198,7 @@ int handle_block_eq(int c_idx, int p_idx, int content_len, const std::string  &f
 
 }
 
-int handle_inline_eq(int c_idx, int p_idx, int content_len, const std::string &file_content){
+int handle_inline_eq(int c_idx, int p_idx, int content_len, std::string file_content){
     std::string command_str;
     Token command;
     int k=c_idx+1;
@@ -221,7 +221,7 @@ int handle_inline_eq(int c_idx, int p_idx, int content_len, const std::string &f
     return c_idx;
 }
 
-int handle_header(int c_idx, int p_idx, int content_len, const std::string &file_content) {
+int handle_header(int c_idx, int p_idx, int content_len,  std::string file_content) {
     std::cout << "Found header str??\n"; 
     int c = c_idx+1; 
     std::string tmp_str;
@@ -234,8 +234,8 @@ int handle_header(int c_idx, int p_idx, int content_len, const std::string &file
     if(is_header){
         Token header_token;
         std::string header_name;
-        int h = c +1;
-        std::cout << " now c is " << c <<  std::endl;
+        int h = c_idx +1;
+        std::cout << " now c is " << c << ": " << file_content[h] <<  std::endl;
         while (h<content_len) {
             char tmp_c = file_content[h];
             if(tmp_c=='\n'){
@@ -279,12 +279,8 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
     std::vector<TokenContent::paragraph> paragraphs;
     paragraphs.emplace_back(); // start first paragraph
     int content_len = file_content.length();
-    int u;
     int p_idx = 0;
-    int new_pos;
     // char paragraph_indent = '\n';
-    char linespace = ' ';
-    char inline_command_start = '$';
     // char block_command_start = '!';
     std::string header_begin = "use_p";
 
