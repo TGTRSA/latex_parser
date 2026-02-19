@@ -50,7 +50,7 @@ namespace TokenContent {
     using paragraph = std::vector<Token>;
     // paragraphs being a collection of "paragraphs"
     // ! Is this even being used??
-    std::map<int, paragraph> paragraphs ;
+    std::vector<paragraph> paragraphs ;
 }
 
 struct Latex {
@@ -173,7 +173,9 @@ bool check_if_header(std::string p_header){
     }
 }
 
-std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
+std::vector<TokenContent::paragraph> lex_content(const std::string &file_content) {
+    std::vector<TokenContent::paragraph> paragraphs;
+    paragraphs.emplace_back(); // start first paragraph
     int content_len = file_content.length();
     int k;
     int u;
@@ -196,7 +198,7 @@ std::vector<TokenContent::paragraph> lex_content(std::string file_content) {
             Token command;
             k=i+1;
             std::cout << "Inline command found at: " << i << " " << file_content[i] << " making k i+1 " << k << " where the symbol is " << file_content[k] << std::endl;
-            while(k<content_len && file_content[k]!=inline_command_start){
+            while(k<content_len - 1){
                 // std::cout << "Compiling latex command" << std::endl;
                 char tmp_char = file_content[k+1];
                
