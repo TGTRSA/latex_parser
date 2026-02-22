@@ -31,18 +31,19 @@ namespace Document {
 };
 
 struct Token {
-    Token *right     = nullptr;
-    Token *left      = nullptr;
     std::string data;
     Grammar type;
     int pos;
-   
+    Token *right     = nullptr;
+    Token *left      = nullptr;
+    
     int len() {
         int content_len = data.length();
         return content_len;
     }
 };
 using paragraph = std::vector<Token>;
+// using paragraphs = std::map<int, paragraph>;
 // for lexing and parsing
 namespace TokenContent { 
     // the token (word, command, etc)
@@ -200,7 +201,7 @@ Token handle_inline_eq(int c_idx, int content_len, std::string file_content){
     int k=c_idx+1;
     while(k<content_len && file_content[k]!='!'){
         char tmp_char = file_content[k+1];
-    
+        std::string tmp_string(1, tmp_char);
         if(tmp_char=='$'){
             command.data+= command_str;
             command.type = INLINE_EQ;    
@@ -217,36 +218,54 @@ Token handle_inline_eq(int c_idx, int content_len, std::string file_content){
     return command;
 }
 
-Token handle_header(int c_idx, int content_len,  std::string file_content) {
-    TokenContent::Token header_token;
-    std::cout << "Found header str??\n"; 
-    int c = c_idx+1; 
-    std::string tmp_str;
-    std::cout << "c is " <<  c - 1 << " at #\n";
-    while(file_content[c]!=' '){
-        tmp_str+=file_content[c];
-        c++;
-    }
-    bool is_header = check_if_header(tmp_str);
-    if(is_header){
-        
-        std::string header_name;
-        int h = c+1;
-        std::cout << " now c is " << c << ": " << file_content[c] <<  std::endl;
-        while (h<content_len) {
-            char tmp_c = file_content[h];
-            std::cout << "Printing tmp_char: " << tmp_c << std::endl;
-            if(tmp_c=='\n'){
-                std::cout << "Found end of header\n";
-                header_token.data = header_name;
-                header_token.pos=h;
-                header_token.type = HEADER;
-                break;
-            }
-            header_name+=tmp_c;
-            h++;
+Token compile_header(int index, std::string file_content, int len_content, Token &header){
+    std::cout << "Check content: " << file_content << "\n";
+    std::string header_string;
+    while(index< len_content) {
+        char c = file_content[index];
+        std::string c_str(1,c );
+        if(c=='\n'){
+            std::cout << "Found end of header at " << index << " where the char is " << c ;
+            header.data = header_string;
+            header.pos = index;
+            header.type = HEADER;
+            header_string = " ";
+            return header;
         }
+        header_string+=c_str;
+        index++;
     }
+    return header;
+}
+
+Token handle_header(int c_idx, int content_len,  std::string file_content) {
+    Token header_token;
+    
+    std::string header;
+    int u = int(c_idx+1);
+    while (u<content_len) {
+        char tmp_char = file_content[u];
+        if(tmp_char==' '){
+            tmp_char=' ';
+            std::cout << "Found end of string\n";
+            break;
+        }
+        std::string c(1, tmp_char);
+        header+=c;
+        std::cout << "Header: " << header << "\n";
+        u++;
+    }
+    bool is_header = check_if_header( header);
+    if(is_header){
+        std::cout << "Found a header\n";
+        header_token = compile_header(u, file_content, content_len, header_token);
+        std::cout << "Header position in regard to struct: " <<  header_token.pos << std::endl;
+    }else{
+        std::cout << "Not a header\n";
+    }
+
+
+
     return header_token;
 }
 
@@ -276,7 +295,7 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
     std::map<int,paragraph> paragraphs;
     // paragraph.emplace_back(); // start first paragraph
     int content_len = file_content.length();
-    int p_idx = 0;
+    int p_indx = 0;
     // char paragraph_indent = '\n';
     // char block_command_start = '!';
     std::string header_begin = "use_p";
@@ -285,57 +304,55 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char c = file_content[i];
-        std::cout << "Current char: " << c << std::endl;
+        std::cout << "Current char: " << c << " nd its index " << i << std::endl;
         // identify the beginning of a command
-        
-
-
-            switch (c) {
-                case '!':
-                {
-                    Token block_command_token = handle_header(c, content_len, file_content);
-                    i = block_command_token.pos;
-                    std::cout << "Attempting to append token??\n";
-                    
-                    TokenContent::paragraphs[p_idx].push_back(block_command_token);
-                    break;
-                }
-                case '$':
-                {
-                    Token inline_command = handle_header(c, content_len, file_content);
-                    i = inline_command.pos;
-                    std::cout << "Attempting to append token??\n";
-                    TokenContent::paragraphs[p_idx].push_back(inline_command);
-                    break;
-                }
-                case '#':
-                {
-                    Token header_token = handle_header(c, content_len, file_content);
-                    std::cout << "header position: " <<  header_token.pos << "\n";
-                    i = header_token.pos;
-                    std::cout << "Attempting to append token??\n";
-                    TokenContent::paragraphs[p_idx].push_back(header_token);
-                    break;
-                }
-                case '\n':
-                    ++p_idx;
-                    break;
-
-                case ' ':
-                    break;  // ignore spaces
-
-                default:
-                {
-                    Token word_token = handle_header(i, content_len, file_content);
-                    i = word_token.pos;
-                    TokenContent::paragraphs[p_idx].push_back(word_token);
-                    break;
-                }
+        switch (c) {
+            case '!':
+            {
+                Token block_command_token = handle_block_eq(i, content_len, file_content);
+                i = block_command_token.pos;
+                std::cout << "Attempting to append token??\n";
                 
-                }   
-            break;
+                // paragraphs[p_indx].push_back(block_command_token);
+                break;
+            }
+            case '$':
+            {
+                Token inline_command = handle_inline_eq(i, content_len, file_content);
+                i = inline_command.pos;
+                std::cout << "Attempting to append token??\n";
+                // paragraphs[p_indx].push_back(inline_command);
+                break;
+            }
+            case '#':
+            {
+                // Token header_token;
+                const Token& header_token = handle_header(i, content_len, file_content);
+                std::cout << "header position: " <<  int(header_token.pos) << "\n";
+                i = header_token.pos;
+                std::cout << "Attempting to append token??\n";
+                // paragraphs[p_indx].push_back(header_token);
+                break;
+            }
+            case '\n':
+                std::cout << "Found new paragraph\n";
+                ++p_indx;
+                break;
+
+            case ' ':
+                break;  // ignore spaces
+
+            default:
+            {
+                Token word_token = handle_word(i, content_len, file_content);
+                std::cout << "Attempting to append word to the vector\n";
+                i = word_token.pos;
+                paragraphs[p_indx].push_back(word_token);
+                break;
+            }
             
-        }
+            }              
+    }
 
     int n = TokenContent::paragraphs.size();
     for(int i=0;i<n;i++){
