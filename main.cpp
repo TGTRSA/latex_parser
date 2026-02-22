@@ -33,7 +33,7 @@ namespace Document {
 struct Token {
     std::string data;
     Grammar type;
-    int pos;
+    int end_pos;
     Token *right     = nullptr;
     Token *left      = nullptr;
     
@@ -172,7 +172,8 @@ bool check_if_header(std::string p_header){
 
 Token handle_block_eq(int c_idx, int content_len, std::string file_content) {
     std::string command_str;
-    TokenContent::Token command;
+    Token command;
+    command.end_pos = c_idx;
     int k=c_idx+1;
     std::cout << "Inline command found at: " << c_idx << " " << file_content[c_idx] << " making k i+1 " << k << " where the symbol is " << file_content[k] << std::endl;
     while(k<content_len - 1){
@@ -182,8 +183,6 @@ Token handle_block_eq(int c_idx, int content_len, std::string file_content) {
         if(tmp_char=='!'){
             command.data+= command_str;
             command.type = BLOCK_EQ;    
-            
-            command.pos = k + 1;
             tmp_char = ' ';
             break;
         }
@@ -206,11 +205,11 @@ Token handle_inline_eq(int c_idx, int content_len, std::string file_content){
             command.data+= command_str;
             command.type = INLINE_EQ;    
             
-            command.pos = k;
+            command.end_pos = k+1;
             tmp_char = ' ';
             break;
         }
-        command_str+=tmp_char;
+        command_str+=tmp_string;
         k+=1;
         // std::cout << "The command content rn: " << command.content  << std::endl;
     }
@@ -221,14 +220,15 @@ Token handle_inline_eq(int c_idx, int content_len, std::string file_content){
 Token compile_header(int index, std::string file_content, int len_content, Token &header){
     std::cout << "Check content: " << file_content << "\n";
     std::string header_string;
+    
     while(index< len_content) {
         char c = file_content[index];
         std::string c_str(1,c );
         if(c=='\n'){
             std::cout << "Found end of header at " << index << " where the char is " << c ;
             header.data = header_string;
-            header.pos = index;
             header.type = HEADER;
+            header.end_pos = index;
             header_string = " ";
             return header;
         }
@@ -259,7 +259,7 @@ Token handle_header(int c_idx, int content_len,  std::string file_content) {
     if(is_header){
         std::cout << "Found a header\n";
         header_token = compile_header(u, file_content, content_len, header_token);
-        std::cout << "Header position in regard to struct: " <<  header_token.pos << std::endl;
+        std::cout << "Header position in regard to struct: " <<  header_token.end_pos << std::endl;
     }else{
         std::cout << "Not a header\n";
     }
@@ -283,7 +283,7 @@ Token handle_word(int c_idx, int content_len, const std::string &file_content ) 
             word_token.data = word; 
             word_token.type = WORD;
             
-            word_token.pos = u;
+            word_token.end_pos = u;
             break;
         }
         u+=1;
@@ -299,39 +299,40 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
     // char paragraph_indent = '\n';
     // char block_command_start = '!';
     std::string header_begin = "use_p";
-
+    const char dollar_sign = '$';
     std::vector<TokenContent::paragraph> content_vec; 
     // start reading the file here
     for(int i=0;i<content_len;i++){
         char c = file_content[i];
-        std::cout << "Current char: " << c << " nd its index " << i << std::endl;
+        std::cout << "Current char: " << c << " and its index " << i << std::endl;
         // identify the beginning of a command
         switch (c) {
             case '!':
             {
                 Token block_command_token = handle_block_eq(i, content_len, file_content);
-                i = block_command_token.pos;
-                std::cout << "Attempting to append token??\n";
-                
-                // paragraphs[p_indx].push_back(block_command_token);
+                i = block_command_token.end_pos;
+                std::cout << "Attempting to append block token " <<  block_command_token.data << "\n";         
+                paragraphs[p_indx].push_back(block_command_token);
                 break;
             }
-            case '$':
+            case dollar_sign:
             {
                 Token inline_command = handle_inline_eq(i, content_len, file_content);
-                i = inline_command.pos;
-                std::cout << "Attempting to append token??\n";
-                // paragraphs[p_indx].push_back(inline_command);
+                i = inline_command.end_pos;
+                std::cout << "Attempting to append inline token"<< inline_command.data;
+                print_nl();
+                paragraphs[p_indx].push_back(inline_command);
                 break;
             }
             case '#':
             {
                 // Token header_token;
                 const Token& header_token = handle_header(i, content_len, file_content);
-                std::cout << "header position: " <<  int(header_token.pos) << "\n";
-                i = header_token.pos;
-                std::cout << "Attempting to append token??\n";
-                // paragraphs[p_indx].push_back(header_token);
+                std::cout << "header end_position: " <<  int(header_token.end_pos) << "\n";
+                i = header_token.end_pos;
+                std::cout << "Attempting to append header token"<< header_token.data;
+                print_nl();
+                paragraphs[p_indx].push_back(header_token);
                 break;
             }
             case '\n':
@@ -346,7 +347,7 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
             {
                 Token word_token = handle_word(i, content_len, file_content);
                 std::cout << "Attempting to append word to the vector\n";
-                i = word_token.pos;
+                i = word_token.end_pos;
                 paragraphs[p_indx].push_back(word_token);
                 break;
             }
@@ -354,9 +355,9 @@ std::vector<TokenContent::paragraph> lex_content(const std::string &file_content
             }              
     }
 
-    int n = TokenContent::paragraphs.size();
+    int n = paragraphs.size();
     for(int i=0;i<n;i++){
-        content_vec.push_back(TokenContent::paragraphs[i]);
+        content_vec.push_back(paragraphs[i]);
     }
     return content_vec;
 }
