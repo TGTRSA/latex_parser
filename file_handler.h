@@ -7,7 +7,6 @@
 
 struct File {
     std::string content;
-    int success = 0;
     std::string path;
 
     void create(const char* filename,std::string dirname) {
@@ -18,12 +17,15 @@ struct File {
         file.close();
     };
 
-    void rm(){
+    int rm(){
         try{std::filesystem::remove(this->path);
-        printf("File deleted\n");
-        }catch (const std::filesystem::f) {
+            printf("File deleted\n");
+            return 0;
+        }catch (const std::filesystem::filesystem_error& e) {
             printf("Error: %s\n", e.what());
+            return -1;
         }
+        
     }
 
 };

@@ -60,7 +60,7 @@ namespace TokenContent {
 struct Latex {
     Document::paragraphs paragraphs_sequence;
     Document::paragraph paragraph;
-
+    std::string content;
     //  takes the linked list and turns the code inside of into the latex_code and appends to string vector 
     void construct_tex(std::vector<TokenContent::paragraph> token_linked_list){
         int len_arr = token_linked_list.size(); 
@@ -78,11 +78,13 @@ struct Latex {
                     std::stringstream header;
                     header << "\\usepackage{" << buf.data << "}" << std::endl; 
                     std::string header_string = header.str();
+                    content+=header_string;
                     this->paragraph.push_back(header_string);
                 }
                 else if(buf.type==WORD)
                 {                       
                     std::cout << buf.data << " is a string" << std::endl; 
+                    content+=buf.data;
                     this->paragraph.push_back(buf.data);
                 }
                 else if(buf.type == INLINE_EQ)
@@ -92,6 +94,7 @@ struct Latex {
                     inline_equation << "$ " << buf.data << " $";
                     
                     std::string inline_equation_string = inline_equation.str();
+                    content+=inline_equation_string;
                     std::cout << inline_equation_string <<std::endl ;
                     this->paragraph.push_back(inline_equation_string);
                     
@@ -103,6 +106,7 @@ struct Latex {
                     block_equation << "\\begin{equation} " << buf.data << " \\end{equation}";
                     
                     std::string block_eq_string = block_equation.str();
+                    content+=block_eq_string;
                     std::cout << block_eq_string << std::endl;
                     this->paragraph.push_back(block_eq_string);
                     
@@ -436,8 +440,17 @@ int main(int argc, char **argv) {
         latex_code.print();
     // }
     File file;
-    file.create("some_latex_file.tex", "latex_files");
-    
+    file.content = latex_code.content;
+    file.create("some_latex_file.txt", "latex_files");
+    std::string option;
+    std::cout << "Do you want to delete the file?(y/n)";
+    std::cin >> option;
+    if(option=="y"){
+        int rc = file.rm();
+        if(rc < 0){
+            fprintf(stderr, "Error deleting file");
+        }
+    }
 
     return 0;
 }
