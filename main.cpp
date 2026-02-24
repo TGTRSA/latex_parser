@@ -15,6 +15,7 @@
 // * [X]          Write inline
 // * [X]          Add support for more libs - chemfig etc ...
 // * [X]          Construct the full document
+// * []           Take into account the end of paragraphs so you can add "\n"
 // * []          Write latex compile pipeline
 // * []          Impliment writing only differences instead of while document
 
@@ -188,7 +189,7 @@ bool check_if_header(std::string p_header){
 Token handle_block_eq(int c_idx, int content_len, std::string file_content) {
     std::string command_str;
     Token command;
-    command.end_pos = c_idx;
+    
     int k=c_idx+1;
     std::cout << "Inline command found at: " << c_idx << " " << file_content[c_idx] << " making k i+1 " << k << " where the symbol is " << file_content[k] << std::endl;
     while(k<content_len - 1){
@@ -198,6 +199,7 @@ Token handle_block_eq(int c_idx, int content_len, std::string file_content) {
         if(tmp_char=='!'){
             command.data+= command_str;
             command.type = BLOCK_EQ;    
+            command.end_pos = k+1;
             tmp_char = ' ';
             break;
         }
