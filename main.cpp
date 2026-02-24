@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include "file_handler.h"
 
 // *** [TODO]:
 // * [X]          Recognise block equation
@@ -66,7 +67,7 @@ struct Latex {
         
         for(int p_indx=0;p_indx<len_arr;p_indx++){
             int len_paragraph = token_linked_list[p_indx].size();
-            std::cout << "Length of paragraph: " << len_paragraph << std::endl;
+            std::cout << "Length of paragraph: " << len_paragraph << std::endl << "\n";
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
@@ -434,6 +435,8 @@ int main(int argc, char **argv) {
         // int latex_code_len = latex_code.doc_content.size();
         latex_code.print();
     // }
+    File file;
+    file.create("some_latex_file.tex", "latex_files");
     
 
     return 0;
