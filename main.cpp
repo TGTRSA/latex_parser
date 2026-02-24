@@ -68,6 +68,11 @@ struct Latex {
         for(int p_indx=0;p_indx<len_arr;p_indx++){
             int len_paragraph = token_linked_list[p_indx].size();
             std::cout << "Length of paragraph: " << len_paragraph << std::endl << "\n";
+            if(p_indx==0){
+                content+="\\documentclass{article}\n";
+                content+="\\usepackage{amsmath}\n";
+                content+="\\begin{document}";
+            }
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
@@ -77,6 +82,7 @@ struct Latex {
                     std::cout << buf.data << " is a header" << std::endl;
                     std::stringstream header;
                     header << "\\usepackage{" << buf.data << "}" << std::endl; 
+                    
                     std::string header_string = header.str();
                     content+=header_string;
                     this->paragraph.push_back(header_string);
@@ -112,7 +118,11 @@ struct Latex {
                     
                 }
                 }
+                if(p_indx==len_arr-1){
+                    content+="\n\\end{document}";
+                }
             }
+            
             this->paragraphs_sequence.push_back(this->paragraph);
             
         }
