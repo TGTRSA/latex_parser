@@ -1,5 +1,5 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef FILE_HANDER_H
+#define FILE_HANDER_H
 
 #include <filesystem>
 #include <fstream>
