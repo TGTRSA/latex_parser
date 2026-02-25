@@ -57,6 +57,18 @@ struct Latex {
     Document::paragraph paragraph;
     std::string content;
     //  takes the linked list and turns the code inside of into the latex_code and appends to string vector 
+    
+    void write_header(Token& buf, std::vector<TokenContent::paragraph> token_linked_list, int p_indx, int token_indx) {
+        buf = token_linked_list[p_indx][token_indx];
+        std::cout << buf.data << " is a header" << std::endl;
+        std::stringstream header;
+        header << "\\usepackage{" << buf.data << "}" << std::endl; 
+    
+        std::string header_string = header.str();
+        content+=header_string;
+        this->paragraph.push_back(header_string);
+    }
+
     void construct_tex(std::vector<TokenContent::paragraph> token_linked_list){
         int len_arr = token_linked_list.size(); 
         
@@ -66,21 +78,20 @@ struct Latex {
             if(p_indx==0){
                 content+="\\documentclass{article}\n";
                 content+="\\usepackage{amsmath}\n";
-                content+="\\begin{document}";
             }
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
                 // std::cout << "Attempting to append to doc_content" << std::endl;
                 if (buf.type==HEADER)
-                {
-                    std::cout << buf.data << " is a header" << std::endl;
-                    std::stringstream header;
-                    header << "\\usepackage{" << buf.data << "}" << std::endl; 
+                {                    
+                    if(token_linked_list[p_indx][token_indx].right->type == HEADER){
+                        write_header( buf, token_linked_list,  p_indx, token_indx);
+                    }else{
+                        write_header( buf, token_linked_list,  p_indx, token_indx);
+                        content+="\\begin{document}";
+                    }
                     
-                    std::string header_string = header.str();
-                    content+=header_string;
-                    this->paragraph.push_back(header_string);
                 }
                 else if(buf.type==WORD)
                 {                       
@@ -120,11 +131,9 @@ struct Latex {
             
             this->paragraphs_sequence.push_back(this->paragraph);
             
-        }
-    
+    }
 
-
-    void print() {
+    void print_ll() {
         std::cout << "Starting print sequence " << std::endl;
         int latex_code_len = this->paragraphs_sequence.size();
         for(int p_indx = 0;p_indx<latex_code_len;p_indx++){
@@ -137,6 +146,10 @@ struct Latex {
             }
             print_nl();
         }
+    }
+
+    void print_content( ){
+        std::cout <<  this->content << "\n";
     }
 
 };

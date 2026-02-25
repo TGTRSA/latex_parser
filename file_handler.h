@@ -4,6 +4,9 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
+#include <sstream>
+#include <vector>
 
 // Base struct for handling files
 struct File {
@@ -27,6 +30,23 @@ struct File {
             return -1;
         }
         
+    }
+
+    void to_pdf(){
+        std::vector<std::string> cmd_base = {
+            "latex ","pdflatex"
+        };
+        int n_commands = cmd_base.size(); 
+        for(int i=0;i<n_commands;i++){
+            std::stringstream cmd;
+            cmd << cmd_base[i] << this->path;
+            std::string cmd_string = cmd.str();
+            std::cout << "Running: " << cmd_string << "\n";
+            // std::cout << "Attempting:" <<  printable;
+            system(cmd_string.c_str());
+        }
+        // system(cmd_string.c_str());
+
     }
 
 };

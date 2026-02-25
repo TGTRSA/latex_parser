@@ -35,20 +35,14 @@ int main(int argc, char **argv) {
     
     latex_code.construct_tex( linked_list);
     // int latex_code_len = latex_code.doc_content.size();
-    latex_code.print();
+    latex_code.print_ll();
+    // latex_code.print_content();
     // }
     File file;
     file.content = latex_code.content;
-    file.create(argv[1], "latex_files", ".tex");
+    file.create("filename", "latex_files", ".tex");
     std::string option;
-    std::cout << "Do you want to delete the file?(y/n)";
-    std::cin >> option;
-    if(option=="y"){
-        int rc = file.rm();
-        if(rc < 0){
-            fprintf(stderr, "Error deleting file");
-        }
-    }
+    file.to_pdf();
 
     return 0;
 }
