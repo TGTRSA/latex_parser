@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     // }
     File file;
     file.content = latex_code.content;
-    file.create("some_latex_file.txt", "latex_files");
+    file.create(argv[1], "latex_files", ".tex");
     std::string option;
     std::cout << "Do you want to delete the file?(y/n)";
     std::cin >> option;

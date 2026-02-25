@@ -10,8 +10,8 @@ struct File {
     std::string content;
     std::string path;
 
-    void create(const char* filename,std::string dirname) {
-        this->path = dirname + "/" + filename; 
+    void create(const char* filename,std::string directory, std::string filetype) {
+        this->path = directory + "/" + filename + filetype; 
         std::cout << "Attempting to create: " << path << std::endl;        
         std::ofstream file(this->path);
         file << content;
