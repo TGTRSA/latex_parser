@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 
+// Base struct for handling files
 struct File {
     std::string content;
     std::string path;

@@ -302,6 +302,7 @@ inline Token handle_word(int c_idx, int content_len, const std::string &file_con
     return word_token;
 }
 
+// reads the "charsets" from a vector and creates tokens based on their content
 inline std::vector<TokenContent::paragraph> lex_content(const std::string &file_content) {
     std::map<int,paragraph> paragraphs;
     // paragraph.emplace_back(); // start first paragraph
@@ -373,6 +374,8 @@ inline std::vector<TokenContent::paragraph> lex_content(const std::string &file_
     return content_vec;
 }
 
+// Returns a vector of tokens in a sequence meant to illustrate paragraphs\
+    The idea for this was that it would serve a purpose alongside some diff lib incase other operations are required
 inline std::vector<TokenContent::paragraph> parse(std::vector<TokenContent::paragraph> lexed_content){
     int n = lexed_content.size();
     std::cout << "Number of paragraphs: " << n << std::endl; 
