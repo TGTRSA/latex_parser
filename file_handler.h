@@ -1,3 +1,4 @@
+
 #ifndef FILE_HANDER_H
 #define FILE_HANDER_H
 
@@ -34,12 +35,18 @@ struct File {
 
     void to_pdf(){
         std::vector<std::string> cmd_base = {
-            "latex ","pdflatex"
+            "latex -output-directory=","pdflatex "
         };
         int n_commands = cmd_base.size(); 
         for(int i=0;i<n_commands;i++){
             std::stringstream cmd;
-            cmd << cmd_base[i] << this->path;
+
+            if(i==0){
+                system("cd latex_files");
+                cmd << cmd_base[i] << this->path << this->path;
+            }else{
+                cmd << cmd_base[i] << this->path;
+            }
             std::string cmd_string = cmd.str();
             std::cout << "Running: " << cmd_string << "\n";
             // std::cout << "Attempting:" <<  printable;

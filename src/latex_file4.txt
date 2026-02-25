@@ -1,5 +1,5 @@
 #include chemfig
-#include another
-This is a latex command block ! \int !
+
+This is a latex command block ! \int x^2 !
 
 This is the second paragraph $ \int c dx $
