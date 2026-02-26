@@ -1,9 +1,5 @@
 #ifndef PARSER_H
 #define PARSER_H
-// #include <chrono>
-// #include <cstdio>
-// #include <chrono>
-// #include <cstdio>
 #include "useful_funcs.h"
 #include <iostream>
 #include <map>
@@ -13,7 +9,7 @@
 #include <sstream>
 #include "file_handler.h"
 
-
+// Describes the patterns of tokens well see
 enum Grammar{
     INLINE_EQ,
     BLOCK_EQ,
@@ -37,9 +33,10 @@ struct Token {
 
 // Describes the document structure and uses new names for ease of use
 namespace Document {
-    using identifier = Token;
-    using sentence   = std::vector<identifier>;
-    using paragraph  = std::vector<sentence>;
+    using identifier = Token;                   // single token: word, command etc
+    using sentence   = std::vector<identifier>; // collection of tokens therefore sentence
+    using paragraph  = std::vector<sentence>;   // collection of setences
+    using full_      = std::vector<paragraph>;  // complete document of paragraphs
 };
 
 inline std::map<Grammar,std::string> grammar_map ={
@@ -105,40 +102,50 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, int
     return t;
 }
 
-inline void lex_content(const std::string& file_content){
+inline Document::full_ lex_content(const std::string& file_content){
     int len_content = file_content.size();
-    
+    int p_indx = 0;
+
+    Document::full_ full_;
+    Document::paragraph p;
+    Document::sentence s;
+
     for(size_t i = 0; i<len_content;i++){
         char c = file_content[i];
         switch (c) {
             case '#':
             {
-                compile_header(i, file_content, len_content);
+                Token header = compile_header(i, file_content, len_content);
+                s.push_back(header);
                 break;
             }
             case '!':
             {
-                compile_block_equation(i, file_content, len_content);
+                Token block = compile_block_equation(i, file_content, len_content);
+                s.push_back(block);
                 break;
             }
             case '$':
             {
-                compile_inline_command(i, file_content, len_content);
+                Token inline_c = compile_inline_command(i, file_content, len_content);
+                s.push_back(inline_c);
                 break;
             }
             case '\n':
             {
-                ;
+                p.push_back(s);
+                s.clear();
                 break;
             }
             default:
             {
-                compile_word(i, file_content, len_content);
+                Token t = compile_word(i, file_content, len_content);
                 break;
             }
         }
     }
-
+    full_.push_back(p);
+    return full_;
 }
 
 #endif
