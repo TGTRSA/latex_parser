@@ -71,11 +71,12 @@ struct Latex {
 
     void construct_tex(std::vector<TokenContent::paragraph> token_linked_list){
         int len_arr = token_linked_list.size(); 
-        
+        Token& first_token = token_linked_list[0][0];
         for(int p_indx=0;p_indx<len_arr;p_indx++){
             int len_paragraph = token_linked_list[p_indx].size();
+             
             std::cout << "Length of paragraph: " << len_paragraph << std::endl << "\n";
-            if(p_indx==0 && token_linked_list[p_indx][0].type==HEADER){
+            if(p_indx==0 && first_token.type!=HEADER){
                 content+="\\documentclass{article}\n";
                 content+="\\usepackage{amsmath}\n";
             }else{
@@ -84,17 +85,17 @@ struct Latex {
                 content+="\\begin{document}";
             }
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
-                Token& buf = token_linked_list[p_indx][token_indx];
+                Token buf = token_linked_list[p_indx][token_indx];
                 // std::cout << "[X] Got token from fake linked list" <<std::endl;
                 // std::cout << "Attempting to append to doc_content" << std::endl;
                 if (buf.type==HEADER)
                 {                    
                     if(buf.right->type == HEADER){
                         write_header( buf, token_linked_list,  p_indx, token_indx);
-                    }else if(buf.right->type!=HEADER){
+                    }else if(buf.right !=nullptr && buf.right->type!=HEADER ){
                         write_header( buf, token_linked_list,  p_indx, token_indx);
                         content+="\\begin{document}";
-                        std::cout << "Document content: " << content << "\n";
+                        std::cout << "Document content: " << content << "\n\n";
                     }
                     
                 }
@@ -227,7 +228,7 @@ inline Token handle_inline_eq(int c_idx, int content_len, std::string file_conte
     std::string command_str;
     Token command;
     int k=c_idx+1;
-    while(k<content_len && file_content[k]!='!'){
+    while(k<=content_len){
         char tmp_char = file_content[k+1];
         std::string tmp_string(1, tmp_char);
         if(tmp_char=='$'){
@@ -305,7 +306,7 @@ inline Token handle_word(int c_idx, int content_len, const std::string &file_con
     // creating word_token for the paragraph vector
     TokenContent::Token word_token;
 
-    while (u<content_len) {
+    while (u<=content_len) {
         char c = file_content[u];
         word+=c;
         if(c==' '){
