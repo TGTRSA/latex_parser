@@ -13,9 +13,10 @@
 struct File {
     std::string content;
     std::string path;
-
+    std::string dir;
     void create(const char* filename,std::string directory, std::string filetype) {
         this->path = directory + "/" + filename + filetype; 
+        this->dir = directory;
         std::cout << "Attempting to create: " << path << std::endl;        
         std::ofstream file(this->path);
         file << content;
@@ -43,12 +44,12 @@ struct File {
 
             if(i==0){
                 system("cd latex_files");
-                cmd << cmd_base[i] << this->path << this->path;
-            }else{
+                cmd << cmd_base[i] << this->dir << " " << this->path;
+            }if(i!=0){
                 cmd << cmd_base[i] << this->path;
             }
             std::string cmd_string = cmd.str();
-            std::cout << "Running: " << cmd_string << "\n";
+            std::cout << "Running: " << cmd_string.c_str() << "\n";
             // std::cout << "Attempting:" <<  printable;
             system(cmd_string.c_str());
         }
