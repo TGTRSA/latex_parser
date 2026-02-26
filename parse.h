@@ -19,11 +19,11 @@ enum Grammar{
 
 // Describes the information for each item of the document \f
 struct Token {
-    std::string data;
-    Grammar     type;
-    int         end_pos;
-    Token       *right     = nullptr;
-    Token       *left      = nullptr;
+    std::string     data;
+    Grammar         type;
+    size_t          end_pos;
+    Token           *right     = nullptr;
+    Token           *left      = nullptr;
     
     int len() const {
         int content_len = data.length();
@@ -42,7 +42,8 @@ namespace Document {
 inline std::map<Grammar,std::string> grammar_map ={
     {BLOCK_EQ,"BLOCK_COMMAND"},
     {INLINE_EQ, "INLINE_COMMAND"},
-    {WORD, "TEXT"}
+    {WORD, "TEXT"},
+    {HEADER, "HEADER"}
 };
 
 // checks if content followed by # is a header file
@@ -52,8 +53,20 @@ inline bool check_if_header(const std::string& p_header){
     return p_header == include;
 }
 
-inline Token compile_block_equation(size_t& block_pos, const std::string& contents, const int& len_content){
+inline Token compile_block_equation(size_t& c_pos, const std::string& contents, const int& len_content){
     Document::identifier t;
+    c_pos++;
+    while(c_pos<len_content){
+        char c = contents[c_pos];
+        if(c=='!'){
+            t.type = BLOCK_EQ;
+            t.end_pos=c_pos;
+            break;
+        }
+        t.data+=c;
+        c_pos++;
+    }
+
     return t;
 }
 
@@ -69,6 +82,7 @@ inline Token compile_word(size_t& word_pos, const std::string& contents, const i
         if(c == ' '){
             // index at space
             t.end_pos = word_pos;
+            t.type = WORD;
             break;
         }
         t.data+=c;
@@ -77,7 +91,7 @@ inline Token compile_word(size_t& word_pos, const std::string& contents, const i
     return t;
 }
 
-inline Token compile_header(size_t& header_pos, const std::string& contents, int len_content){
+inline Token compile_header(size_t& header_pos, const std::string& contents, size_t len_content){
     size_t h_p = header_pos+1;
     std::string tmp_string;
     Document::identifier t;
@@ -97,24 +111,23 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, int
         return t;
     }else{
         // ? at this point header_pos is at a space ' ' which will be followed by {} which means i should skip +2 because '#{chemfig}       
-        header_pos+=2;
-        while(header_pos<len_content){
-            char c = contents[header_pos];
+        h_p+=2;
+        while(h_p<len_content){
+            char c = contents[h_p];
             if(c=='}'){
                 t.type = HEADER;
-                t.end_pos = header_pos;
+                t.end_pos = h_p;
                 break;
             }
             t.data+=c;
-            header_pos++;
+            h_p++;
         }
     }
     return t;
 }
 // takes in the content as string and spits out a vector of vectors meant to act as a container for 'pargraphs of text'
 inline Document::full_ lex_content(const std::string& file_content){
-    int len_content = file_content.size();
-    int p_indx = 0;
+    size_t len_content = file_content.size();
 
     Document::full_ full_;
     Document::paragraph p;
@@ -122,39 +135,62 @@ inline Document::full_ lex_content(const std::string& file_content){
 
     for(size_t i = 0; i<len_content;i++){
         char c = file_content[i];
+        if(c!=' '){
+            std::cout << "Current position: " << i << " and char at pos: " << c << "\n";
+        }
         switch (c) {
             case '#':
             {
                 Token header = compile_header(i, file_content, len_content);
+                std::cout << "Created header token now appending...\n"; 
                 s.push_back(header);
+                i = header.end_pos;
                 break;
             }
             case '!':
             {
                 Token block = compile_block_equation(i, file_content, len_content);
+                std::cout << "Created block equation token now appending...\n";  
                 s.push_back(block);
+                i = block.end_pos;
                 break;
             }
             case '$':
             {
                 Token inline_c = compile_inline_command(i, file_content, len_content);
                 s.push_back(inline_c);
+                i=inline_c.end_pos;
                 break;
             }
             case '\n':
             {
                 p.push_back(s);
+                std::cout << "Found new paragraph\n";
                 s.clear();
                 break;
             }
             default:
             {
                 Token t = compile_word(i, file_content, len_content);
+                s.push_back(t);
+                std::cout << "Created word token now appending...\n"; 
+                i = t.end_pos;
                 break;
             }
         }
     }
     full_.push_back(p);
+    for(int i = 0 ; i<full_.size();i++){
+        int paragraphs = full_[0].size();
+        Document::paragraph p = full_[i];
+        for(int j = 0;j<paragraphs;j++){
+            Document::sentence sen = p[j];
+            int sen_len = sen.size();
+            for(int k=0;k<sen_len;k++){
+                std::cout << sen[k].data << " " << grammar_map[sen[k].type] << std::endl ;
+            }
+        }
+    }
     return full_;
 }
 

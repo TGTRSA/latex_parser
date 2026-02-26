@@ -2,8 +2,6 @@
 // #include <cstdio>
 #include "useful_funcs.h"
 #include <iostream>
-#include <string>
-#include <vector>
 #include "file_handler.h"
 #include "parse.h"
 
@@ -24,7 +22,13 @@ int main(int argc, char **argv) {
     latex_input.get_file_contents(textfile);
     std::cout << "File content: \n" << latex_input.content << std::endl;
 
-    // std::vector<TokenContent::paragraph> content =  lex_content(file_content);
+    Document::full_ content =  lex_content(latex_input.content);
+    // size_t n_tokens = content[0].size();
+    // for(size_t i=0;i<n_tokens;i++){
+    //     std::cout << "Number of tokens: " << n_tokens << "\n";
+    //     std::cout << content[0][i][i].data << std::endl;
+    // }
+    // std::cout << content[0][0][1].data << " " << content[0][1][0].data << std::endl;
     // std::vector<TokenContent::paragraph> linked_list =  parse(content);
     // TokenContent::paragraph ll = linked_list[0];
    
