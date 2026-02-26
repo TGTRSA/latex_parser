@@ -9,6 +9,27 @@
 #include <sstream>
 #include <vector>
 
+struct InputFile {
+    std::string content;
+
+    void get_file_contents(char *filename) {
+        std::string tmp_string;
+        std::string file_contents;
+        std::ifstream file(filename);
+        char ch;
+        
+        if(file.is_open()){
+            while (file.get(ch)) {
+                printf("This is the contents of the text file:\n%s", file_contents.c_str());
+                std::cout << ch << std::endl;
+                this->content+=ch;
+            }       
+        }else {
+            std::cerr << "Failed to open file" << std::endl;
+        }
+    }
+};
+
 // Base struct for handling files
 struct File {
     std::string content;

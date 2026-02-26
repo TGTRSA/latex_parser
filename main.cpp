@@ -20,29 +20,14 @@
 int main(int argc, char **argv) {
     std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
     char *textfile = argv[1];
-    std::string file_content = get_file_contents(textfile);
-    std::cout << "File content: " << file_content << std::endl;
+    InputFile latex_input;
+    latex_input.get_file_contents(textfile);
+    std::cout << "File content: \n" << latex_input.content << std::endl;
 
-    std::vector<TokenContent::paragraph> content =  lex_content(file_content);
-    std::vector<TokenContent::paragraph> linked_list =  parse(content);
-    TokenContent::paragraph ll = linked_list[0];
-    // * This would be p1
-    // Token* p_1 = &ll[0];
-    // print_ll(p_1);
-    //  something
-    Latex latex_code;
-    std::cout << "[X] Created latex struct" << std::endl;
-    
-    latex_code.construct_tex( linked_list);
-    // int latex_code_len = latex_code.doc_content.size();
-    latex_code.print_ll();
-    // latex_code.print_content();
-    // }
-    File file;
-    file.content = latex_code.content;
-    file.create("filename", "latex_files", ".tex");
-    std::string option;
-    file.to_pdf();
+    // std::vector<TokenContent::paragraph> content =  lex_content(file_content);
+    // std::vector<TokenContent::paragraph> linked_list =  parse(content);
+    // TokenContent::paragraph ll = linked_list[0];
+   
 
     return 0;
 }
