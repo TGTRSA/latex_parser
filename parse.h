@@ -75,9 +75,13 @@ struct Latex {
         for(int p_indx=0;p_indx<len_arr;p_indx++){
             int len_paragraph = token_linked_list[p_indx].size();
             std::cout << "Length of paragraph: " << len_paragraph << std::endl << "\n";
-            if(p_indx==0){
+            if(p_indx==0 && token_linked_list[p_indx][0].type==HEADER){
                 content+="\\documentclass{article}\n";
                 content+="\\usepackage{amsmath}\n";
+            }else{
+                content+="\\documentclass{article}\n";
+                content+="\\usepackage{amsmath}\n";
+                content+="\\begin{document}";
             }
             for(int token_indx=0;token_indx<len_paragraph;token_indx++){
                 Token& buf = token_linked_list[p_indx][token_indx];
@@ -85,11 +89,12 @@ struct Latex {
                 // std::cout << "Attempting to append to doc_content" << std::endl;
                 if (buf.type==HEADER)
                 {                    
-                    if(token_linked_list[p_indx][token_indx].right->type == HEADER){
+                    if(buf.right->type == HEADER){
                         write_header( buf, token_linked_list,  p_indx, token_indx);
-                    }else{
+                    }else if(buf.right->type!=HEADER){
                         write_header( buf, token_linked_list,  p_indx, token_indx);
                         content+="\\begin{document}";
+                        std::cout << "Document content: " << content << "\n";
                     }
                     
                 }
