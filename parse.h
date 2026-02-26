@@ -20,15 +20,14 @@ enum Grammar{
     WORD,
     HEADER,
 };
-//  for final document => arr[i] =  paragraph => arr[i][j] = word
 
-
+// Describes the information for each item of the document \f
 struct Token {
     std::string data;
-    Grammar type;
-    int end_pos;
-    Token *right     = nullptr;
-    Token *left      = nullptr;
+    Grammar     type;
+    int         end_pos;
+    Token       *right     = nullptr;
+    Token       *left      = nullptr;
     
     int len() const {
         int content_len = data.length();
@@ -36,8 +35,7 @@ struct Token {
     }
 };
 
-
-
+// Describes the document structure and uses new names for ease of use
 namespace Document {
     using identifier = Token;
     using sentence   = std::vector<identifier>;
@@ -50,26 +48,61 @@ inline std::map<Grammar,std::string> grammar_map ={
     {WORD, "TEXT"}
 };
 
+// checks if content followed by # is a header file
 inline bool check_if_header(const std::string& p_header){
-    std::string include = "include";
+    const std::string include = "include";
     std::cout <<  "Comparing " << p_header << " with " << include << "\n";
     return p_header == include;
 }
 
-inline void compile_block_equation(size_t& block_pos){
-
+inline Token compile_block_equation(size_t& block_pos, const std::string& contents, const int& len_content){
+    Document::identifier t;
+    return t;
 }
 
-inline void compile_inline_command(size_t& inline_pos){
-
+inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, const int& len_content){
+    Document::identifier t;
+    return t;
 }
 
-inline void compile_header(size_t& header_pos){
-
+inline Token compile_word(size_t& word_pos, const std::string& contents, const int& len_content){
+    Document::identifier t;
+    return t;
 }
 
-inline void compile_word(size_t& word_pos){
-
+inline Token compile_header(size_t& header_pos, const std::string& contents, int len_content){
+    size_t h_p = header_pos+1;
+    std::string tmp_string;
+    Document::identifier t;
+    while(h_p<len_content){
+        char c = contents[h_p];
+        if(c==' '){
+            break;
+        }
+        tmp_string+=c;
+        h_p++;
+    }
+    bool b_header =  check_if_header(tmp_string);
+    if(!b_header){        
+        // not a header so delegate to compile word
+        header_pos-=1;
+        t = compile_word(header_pos,contents, len_content);
+        return t;
+    }else{
+        // ? at this point header_pos is at a space ' ' which will be followed by {} which means i should skip +2 because '#{chemfig}       
+        header_pos+=2;
+        while(header_pos<len_content){
+            char c = contents[header_pos];
+            if(c=='}'){
+                t.type = HEADER;
+                t.end_pos = header_pos;
+                break;
+            }
+            t.data+=c;
+            header_pos++;
+        }
+    }
+    return t;
 }
 
 inline void lex_content(const std::string& file_content){
@@ -80,17 +113,17 @@ inline void lex_content(const std::string& file_content){
         switch (c) {
             case '#':
             {
-                compile_header(i);
+                compile_header(i, file_content, len_content);
                 break;
             }
             case '!':
             {
-                compile_block_equation(i);
+                compile_block_equation(i, file_content, len_content);
                 break;
             }
             case '$':
             {
-                compile_inline_command(i);
+                compile_inline_command(i, file_content, len_content);
                 break;
             }
             case '\n':
@@ -100,7 +133,7 @@ inline void lex_content(const std::string& file_content){
             }
             default:
             {
-                compile_word(i);
+                compile_word(i, file_content, len_content);
                 break;
             }
         }
