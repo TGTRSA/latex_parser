@@ -9,9 +9,11 @@
 #include <sstream>
 #include <vector>
 
+// struct for handling the latex file
 struct InputFile {
-    std::string content;
+    std::string content;        // the physical content it will contain
 
+    
     void get_file_contents(char *filename) {
         std::string tmp_string;
         std::string file_contents;
@@ -32,9 +34,11 @@ struct InputFile {
 
 // Base struct for handling files
 struct File {
-    std::string content;
-    std::string path;
-    std::string dir;
+    std::string content;    // actual content
+    std::string path;       // full path
+    std::string dir;        // solely used for directory
+    
+    // well ... im sure u can tell
     void create(const char* filename,std::string directory, std::string filetype) {
         this->path = directory + "/" + filename + filetype; 
         this->dir = directory;
@@ -44,6 +48,7 @@ struct File {
         file.close();
     };
 
+    // removes the file
     int rm(){
         try{std::filesystem::remove(this->path);
             printf("File deleted\n");

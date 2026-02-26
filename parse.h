@@ -101,7 +101,7 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, int
     }
     return t;
 }
-
+// takes in the content as string and spits out a vector of vectors meant to act as a container for 'pargraphs of text'
 inline Document::full_ lex_content(const std::string& file_content){
     int len_content = file_content.size();
     int p_indx = 0;
