@@ -64,6 +64,16 @@ inline Token compile_inline_command(size_t& inline_pos, const std::string& conte
 
 inline Token compile_word(size_t& word_pos, const std::string& contents, const int& len_content){
     Document::identifier t;
+    while(word_pos < len_content){
+        char c = contents[word_pos];
+        if(c == ' '){
+            // index at space
+            t.end_pos = word_pos;
+            break;
+        }
+        t.data+=c;
+        word_pos++;
+    }
     return t;
 }
 
