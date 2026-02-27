@@ -22,6 +22,7 @@ struct Token {
     std::string     data;
     Grammar         type;
     size_t          end_pos;
+    size_t          start_pos;
     Token           *right     = nullptr;
     Token           *left      = nullptr;
     
@@ -46,6 +47,13 @@ inline std::map<Grammar,std::string> grammar_map ={
     {HEADER, "HEADER"}
 };
 
+class Parser {
+    public:
+        Document::full_ all_content;
+
+
+};
+
 // checks if content followed by # is a header file
 inline bool check_if_header(const std::string& p_header){
     const std::string include = "include";
@@ -53,7 +61,7 @@ inline bool check_if_header(const std::string& p_header){
     return p_header == include;
 }
 
-inline Token compile_block_equation(size_t& c_pos, const std::string& contents, const int& len_content){
+inline Token compile_block_equation(size_t& c_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
     c_pos++;
     while(c_pos<len_content){
@@ -70,12 +78,24 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
     return t;
 }
 
-inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, const int& len_content){
+inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
+    size_t len_con = contents.size();
+    t.start_pos = inline_pos; 
+    inline_pos++;
+    while(inline_pos<len_con){
+        char c = contents[inline_pos];
+        if(c == '!'){
+            t.end_pos   = inline_pos;
+            t.type      = INLINE_EQ;
+        }
+        t.data+=c;
+        inline_pos++;
+    }
     return t;
 }
 
-inline Token compile_word(size_t& word_pos, const std::string& contents, const int& len_content){
+inline Token compile_word(size_t& word_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
     while(word_pos < len_content){
         char c = contents[word_pos];
@@ -187,7 +207,8 @@ inline Document::full_ lex_content(const std::string& file_content){
             Document::sentence sen = p[j];
             int sen_len = sen.size();
             for(int k=0;k<sen_len;k++){
-                std::cout << sen[k].data << " " << grammar_map[sen[k].type] << std::endl ;
+                std::stringstream ss; ss  << grammar_map[sen[k].type] << "(" << sen[k].data << ")\n"; 
+                std::cout << ss.str() <<std::endl ;
             }
         }
     }
