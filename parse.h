@@ -50,7 +50,9 @@ inline std::map<Grammar,std::string> grammar_map ={
 class Parser {
     public:
         Document::full_ all_content;
-
+        std::string     string_content;
+        void print_();
+        void compile_latex();
 
 };
 
@@ -67,8 +69,8 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
     while(c_pos<len_content){
         char c = contents[c_pos];
         if(c=='!'){
-            t.type = BLOCK_EQ;
-            t.end_pos=c_pos;
+            t.type      = BLOCK_EQ;
+            t.end_pos   = c_pos;
             break;
         }
         t.data+=c;
@@ -80,14 +82,15 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
 
 inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
-    size_t len_con = contents.size();
+    // size_t len_con = contents.size();
     t.start_pos = inline_pos; 
     inline_pos++;
-    while(inline_pos<len_con){
+    while(inline_pos<len_content){
         char c = contents[inline_pos];
-        if(c == '!'){
+        if(c == '$'){
             t.end_pos   = inline_pos;
             t.type      = INLINE_EQ;
+            break;
         }
         t.data+=c;
         inline_pos++;
@@ -200,7 +203,8 @@ inline Document::full_ lex_content(const std::string& file_content){
         }
     }
     full_.push_back(p);
-    for(int i = 0 ; i<full_.size();i++){
+    int l_p = full_.size();
+    for(int i = 0 ; i<l_p;i++){
         int paragraphs = full_[0].size();
         Document::paragraph p = full_[i];
         for(int j = 0;j<paragraphs;j++){
@@ -208,7 +212,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             int sen_len = sen.size();
             for(int k=0;k<sen_len;k++){
                 std::stringstream ss; ss  << grammar_map[sen[k].type] << "(" << sen[k].data << ")\n"; 
-                std::cout << ss.str() <<std::endl ;
+                std::cout << ss.str() ;
             }
         }
     }
