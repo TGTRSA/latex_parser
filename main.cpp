@@ -23,6 +23,10 @@ int main(int argc, char **argv) {
     std::cout << "File content: \n" << latex_input.content << std::endl;
 
     Document::full_ content =  lex_content(latex_input.content);
+    Parser p;
+    p.doc_content =content;
+    p.compile_latex();
+    p.print_();
     // size_t n_tokens = content[0].size();
     // for(size_t i=0;i<n_tokens;i++){
     //     std::cout << "Number of tokens: " << n_tokens << "\n";

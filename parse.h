@@ -15,6 +15,7 @@ enum Grammar{
     BLOCK_EQ,
     WORD,
     HEADER,
+    NEW_LINE
 };
 
 // Describes the information for each item of the document \f
@@ -44,7 +45,8 @@ inline std::map<Grammar,std::string> grammar_map ={
     {BLOCK_EQ,"BLOCK_COMMAND"},
     {INLINE_EQ, "INLINE_COMMAND"},
     {WORD, "TEXT"},
-    {HEADER, "HEADER"}
+    {HEADER, "HEADER"},
+    {NEW_LINE, "NEW_LINE"}
 };
 
 class Parser {
@@ -58,9 +60,10 @@ class Parser {
 
 // prints parsed content
 inline void Parser::print_(){
-    ;
+    std::cout << this->string_content;
 }
 
+// writes the tokens to latex code and compiles 
 inline void Parser::compile_latex(){
     this->string_content+="\\documentclass{article}";
     std::string header_files;
@@ -77,7 +80,11 @@ inline void Parser::compile_latex(){
             // writes to content per sentence
             for(int t_indx=0;t_indx<sen_len;t_indx++){
                 Token& current_token = sen[t_indx];
-                
+                size_t t_len = current_token.len();
+                if(current_token.data[t_len-1]=='\n')
+                {
+
+                }
                 switch (current_token.type) {
                     case HEADER:
                     {
@@ -87,11 +94,6 @@ inline void Parser::compile_latex(){
                         if(current_token.right->type!=HEADER && current_token.right!=nullptr){
                             string_content+="\\begin{document}";
                         }
-                        break;
-                    }
-                    case WORD:
-                    {
-                        string_content+=current_token.data;
                         break;
                     }
                     case INLINE_EQ:
@@ -104,14 +106,22 @@ inline void Parser::compile_latex(){
                     case BLOCK_EQ:
                     {
                         std::stringstream ss;
-                        ss << "\\begin{equation}" << current_token.data << "\\end{equation}";
+                        ss << " \\begin{equation}" << current_token.data << " \\end{equation} ";
                         string_content+=ss.str();
+                        break;
+                    }
+                    default:
+                    {
+                        std::stringstream ss;
+                        ss << " " << current_token.data << " ";
+                        string_content+=current_token.data;
                         break;
                     }
                 }
             }
         }
     }
+    string_content+="\\end{document}";
 }
 
 // checks if content followed by # is a header file
@@ -158,6 +168,7 @@ inline Token compile_inline_command(size_t& inline_pos, const std::string& conte
 
 inline Token compile_word(size_t& word_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
+    
     while(word_pos < len_content){
         char c = contents[word_pos];
         if(c == ' '){
@@ -245,8 +256,14 @@ inline Document::full_ lex_content(const std::string& file_content){
             }
             case '\n':
             {
-                p.push_back(s);
                 std::cout << "Found new paragraph\n";
+                Token t;
+                t.data = '\n';
+                t.type = NEW_LINE;
+                
+                s.push_back(t);
+                p.push_back(s);
+                
                 s.clear();
                 break;
             }
