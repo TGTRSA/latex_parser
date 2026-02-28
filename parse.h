@@ -49,12 +49,70 @@ inline std::map<Grammar,std::string> grammar_map ={
 
 class Parser {
     public:
-        Document::full_ all_content;
+        Document::full_ doc_content;
         std::string     string_content;
         void print_();
         void compile_latex();
 
 };
+
+// prints parsed content
+inline void Parser::print_(){
+    ;
+}
+
+inline void Parser::compile_latex(){
+    this->string_content+="\\documentclass{article}";
+    std::string header_files;
+    int l_p = this->doc_content.size();
+
+    for(int p_indx = 0 ; p_indx<l_p;p_indx++){
+        int paragraphs = doc_content[0].size();
+        Document::paragraph p = doc_content[p_indx];
+
+        for(int s_indx = 0;s_indx<paragraphs;s_indx++){
+            Document::sentence sen = p[s_indx];
+            int sen_len = sen.size();
+
+            // writes to content per sentence
+            for(int t_indx=0;t_indx<sen_len;t_indx++){
+                Token& current_token = sen[t_indx];
+                
+                switch (current_token.type) {
+                    case HEADER:
+                    {
+                        std::stringstream ss;
+                        ss << "\\usepackage{" << current_token.data << "}\n";
+                        string_content+=ss.str();
+                        if(current_token.right->type!=HEADER && current_token.right!=nullptr){
+                            string_content+="\\begin{document}";
+                        }
+                        break;
+                    }
+                    case WORD:
+                    {
+                        string_content+=current_token.data;
+                        break;
+                    }
+                    case INLINE_EQ:
+                    {
+                        std::stringstream ss;
+                        ss << "$" << current_token.data << "$";
+                        string_content+=ss.str();
+                        break;
+                    }
+                    case BLOCK_EQ:
+                    {
+                        std::stringstream ss;
+                        ss << "\\begin{equation}" << current_token.data << "\\end{equation}";
+                        string_content+=ss.str();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
 
 // checks if content followed by # is a header file
 inline bool check_if_header(const std::string& p_header){
