@@ -1,4 +1,4 @@
-#include chemfig
+#include {chemfig}
 
 This is a latex command block ! \int x^2 !
 

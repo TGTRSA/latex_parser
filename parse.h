@@ -92,14 +92,14 @@ inline void Parser::compile_latex(){
                         ss << "\\usepackage{" << current_token.data << "}\n";
                         string_content+=ss.str();
                         if(current_token.right->type!=HEADER && current_token.right!=nullptr){
-                            string_content+="\\begin{document}";
+                            string_content+="\\begin{document}\n";
                         }
                         break;
                     }
                     case INLINE_EQ:
                     {
                         std::stringstream ss;
-                        ss << "$" << current_token.data << "$";
+                        ss << " $ " << current_token.data << " $ ";
                         string_content+=ss.str();
                         break;
                     }
@@ -113,7 +113,7 @@ inline void Parser::compile_latex(){
                     default:
                     {
                         std::stringstream ss;
-                        ss << " " << current_token.data << " ";
+                        ss << "  " << current_token.data << "  ";
                         string_content+=current_token.data;
                         break;
                     }
@@ -121,7 +121,7 @@ inline void Parser::compile_latex(){
             }
         }
     }
-    string_content+="\\end{document}";
+    string_content+="\n\\end{document}";
 }
 
 // checks if content followed by # is a header file
@@ -228,13 +228,13 @@ inline Document::full_ lex_content(const std::string& file_content){
     for(size_t i = 0; i<len_content;i++){
         char c = file_content[i];
         if(c!=' '){
-            std::cout << "Current position: " << i << " and char at pos: " << c << "\n";
+            std::cout << "\nCurrent position: " << i << " and char at pos: " << c << "\n";
         }
         switch (c) {
             case '#':
             {
                 Token header = compile_header(i, file_content, len_content);
-                std::cout << "Created header token now appending...\n"; 
+                std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n"; 
                 s.push_back(header);
                 i = header.end_pos;
                 break;
@@ -242,7 +242,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             case '!':
             {
                 Token block = compile_block_equation(i, file_content, len_content);
-                std::cout << "Created block equation token now appending...\n";  
+                std::cout << "Created block equation token now appending "<< block.data << " "<< grammar_map[block.type] << "\n";  
                 s.push_back(block);
                 i = block.end_pos;
                 break;
@@ -251,6 +251,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             {
                 Token inline_c = compile_inline_command(i, file_content, len_content);
                 s.push_back(inline_c);
+                std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;  
                 i=inline_c.end_pos;
                 break;
             }
@@ -260,6 +261,7 @@ inline Document::full_ lex_content(const std::string& file_content){
                 Token t;
                 t.data = '\n';
                 t.type = NEW_LINE;
+                std::cout << "Created new line token now appending "<< t.data << " "<< grammar_map[t.type] << std::endl;  
                 
                 s.push_back(t);
                 p.push_back(s);
@@ -271,7 +273,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             {
                 Token t = compile_word(i, file_content, len_content);
                 s.push_back(t);
-                std::cout << "Created word token now appending...\n"; 
+                std::cout << "Created word token now appending " << t.data << " " << grammar_map[t.type]; 
                 i = t.end_pos;
                 break;
             }
@@ -279,9 +281,11 @@ inline Document::full_ lex_content(const std::string& file_content){
     }
     full_.push_back(p);
     int l_p = full_.size();
+    
     for(int i = 0 ; i<l_p;i++){
         int paragraphs = full_[0].size();
         Document::paragraph p = full_[i];
+        printf("len of paragraphs: %d", paragraphs);
         for(int j = 0;j<paragraphs;j++){
             Document::sentence sen = p[j];
             int sen_len = sen.size();

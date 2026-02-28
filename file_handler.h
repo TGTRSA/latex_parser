@@ -19,11 +19,9 @@ struct InputFile {
         std::string file_contents;
         std::ifstream file(filename);
         char ch;
-        
+        printf("This is the contents of the text file:\n%s", file_contents.c_str());
         if(file.is_open()){
             while (file.get(ch)) {
-                printf("This is the contents of the text file:\n%s", file_contents.c_str());
-                std::cout << ch << std::endl;
                 this->content+=ch;
             }       
         }else {
