@@ -26,7 +26,23 @@ int main(int argc, char **argv) {
     Parser p;
     p.doc_content =content;
     p.compile_latex();
-    p.print_();
+    // p.print_();
+    Document::full_ doc_ = p.doc_content;
+    Document::paragraph par = doc_[0];
+    int par_len = par.size();
+    //printing the parsed tokens
+    for(int i = 0;i<par_len;i++)
+    {
+        auto s  = par[i];
+        int len_s = s.size();
+        for(int j = 0; j<len_s ;j++)
+        {
+            auto t =  s[j];
+            std::cout << "Token: " << t.data << "\n";
+            
+        }
+    } 
+
     // size_t n_tokens = content[0].size();
     // for(size_t i=0;i<n_tokens;i++){
     //     std::cout << "Number of tokens: " << n_tokens << "\n";
