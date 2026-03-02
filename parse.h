@@ -49,12 +49,13 @@ inline std::map<Grammar,std::string> grammar_map ={
 
 class Parser {
     public:
-        Document::full_ doc_content;
-        std::string     string_content;
-        Token           current_token;
+        Document::full_     doc_content;
+        std::string         string_content;
+        Token               current_token;
+        Document::sentence  sen;
         void print_();
         void compile_latex();
-        void write_header(Token& current_token);
+        void write_header(Token& current_token, size_t indx);
 
 };
 
@@ -63,68 +64,57 @@ inline void Parser::print_(){
     std::cout << this->string_content;
 }
 
-inline void Parser::write_header(Token& current_token){
-    std::stringstream ss;
-    ss << "\\usepackage{" << current_token.data << "}\n";
-    std::string tmp_string = ss.str();
+inline void Parser::write_header(Token& current_token, size_t indx){
+    
+    std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
-    current_token.data.clear();
-    current_token.data = tmp_string;
-    // if(!=HEADER)
-    // {
-    //     string_content+="\\begin{document}\n";
-    // }
+
+    if(this->sen[indx+1].type!=HEADER)
+    {
+        string_content+="\\begin{document}\n";
+    }
 }
 
 // writes the tokens to latex code and compiles 
 inline void Parser::compile_latex(){
     this->string_content+="\\documentclass{article}";
     std::string header_files;
-    int l_p = this->doc_content.size();
+    size_t l_p = this->doc_content.size();
 
-    for(int p_indx = 0 ; p_indx<l_p;p_indx++){
-        int paragraphs = doc_content[0].size();
+    for(size_t p_indx = 0 ; p_indx<l_p;p_indx++){
+        size_t paragraphs = doc_content[p_indx].size();
         Document::paragraph p = doc_content[p_indx];
 
-        for(int s_indx = 0;s_indx<paragraphs;s_indx++){
-            Document::sentence sen = p[s_indx];
-            int sen_len = sen.size();
+        for(size_t s_indx = 0;s_indx<paragraphs;s_indx++){
+            this->sen = p[s_indx];
+            size_t sen_len = this->sen.size();
 
             // writes to content per sentence
-            for(int t_indx=0;t_indx<sen_len;t_indx++){
-                this->current_token = sen[t_indx];
+            for(size_t t_indx=0;t_indx<sen_len;t_indx++){
+                this->current_token = this->sen[t_indx];
                 // size_t t_len = current_token.len();
                 switch (current_token.type) {
                     case HEADER:
                     {
-                        write_header(current_token);
+                        write_header(current_token, t_indx);
                         break;
                     }
                     case INLINE_EQ:
                     {
-                        std::stringstream ss;
-                        ss << " $ " << current_token.data << " $ ";
-                        std::string tmp_string = ss.str();
+                        std::string tmp_string = " $ " + current_token.data + " $ ";   
                         string_content += tmp_string;
-                        current_token.data =  tmp_string;
                         break;
                     }
                     case BLOCK_EQ:
                     {
-                        std::stringstream ss;
-                        ss << " \\begin{equation}" << current_token.data << " \\end{equation} ";
-                        std::string tmp_string  = ss.str();
+                        std::string tmp_string = " \\begin{equation}" + current_token.data + " \\end{equation} ";
                         string_content          +=tmp_string;
-                        current_token.data.clear();
-                        current_token.data      = tmp_string;
                         break;
                     }
                  default:
                     {
-                        std::stringstream ss;
-                        std::string tmp_string = ss.str();
+                        std::string tmp_string = " " + current_token.data + " ";
                         string_content+=tmp_string;
-                        current_token.data = tmp_string;
                         break;
                     }
 
