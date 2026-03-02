@@ -30,6 +30,27 @@ struct Token {
         int content_len = data.length();
         return content_len;
     }
+
+    void link(std::vector<std::vector<std::vector<Token>>> document) 
+    { 
+        size_t u = 0;
+        size_t len_doc = document.size();
+        for(size_t i=0;i<len_doc;i++)
+        {
+            std::vector<std::vector<Token>> pars =  document[i];
+            size_t  len_p = pars.size();
+            for(size_t j=0;j<len_p;j++)
+            {
+                std::vector<Token> s = pars[j];
+                size_t len_s = s.size();
+                while(u<len_s)
+                {
+                    Token& t = s[u];
+                    t.right  = &s[u+1];
+                }
+            } 
+        }
+    }
 };
 
 // Describes the document structure and uses new names for ease of use
@@ -46,6 +67,7 @@ inline std::map<Grammar,std::string> grammar_map ={
     {WORD, "TEXT"},
     {HEADER, "HEADER"},
 };
+
 
 class Parser {
     public:
@@ -69,10 +91,10 @@ inline void Parser::write_header(Token& current_token, size_t indx){
     std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
 
-    if(this->sen[indx+1].type!=HEADER)
-    {
-        string_content+="\\begin{document}\n";
-    }
+    // if(this->sen[indx+1].type!=HEADER)
+    // {
+    //     string_content+="\\begin{document}\n";
+    // }
 }
 
 // writes the tokens to latex code and compiles 
