@@ -30,28 +30,8 @@ struct Token {
         int content_len = data.length();
         return content_len;
     }
-
-    void link(std::vector<std::vector<std::vector<Token>>> document) 
-    { 
-        size_t u = 0;
-        size_t len_doc = document.size();
-        for(size_t i=0;i<len_doc;i++)
-        {
-            std::vector<std::vector<Token>> pars =  document[i];
-            size_t  len_p = pars.size();
-            for(size_t j=0;j<len_p;j++)
-            {
-                std::vector<Token> s = pars[j];
-                size_t len_s = s.size();
-                while(u<len_s)
-                {
-                    Token& t = s[u];
-                    t.right  = &s[u+1];
-                }
-            } 
-        }
-    }
 };
+
 
 // Describes the document structure and uses new names for ease of use
 namespace Document {
@@ -61,7 +41,35 @@ namespace Document {
     using full_      = std::vector<paragraph>;  // complete document of paragraphs
 };
 
-inline std::map<Grammar,std::string> grammar_map ={
+inline Document::full_ link(Document::full_& document) { 
+        int u = 0;
+        ;
+        int next_token_indx = 1;
+        // int len_doc = document.size();
+        Document::paragraph& pars =  document.at(0);
+        int  len_p = pars.size();
+        for(int j=0;j<len_p;j++)
+        {
+            // std::cout << pars[j][j].data;
+            // std::cout << "Where tf i am ";
+            Document::sentence& s = pars[j];
+            int len_s = s.size();
+            while(u<len_s)
+            {
+                Token& c_token   = s[u];
+                if(next_token_indx<len_s-1){
+                    Token& n_token   = s[next_token_indx];
+                    c_token.right    = &n_token;
+                }
+                u++;
+            }
+        } 
+    
+     return document;
+}
+
+
+inline std::map<Grammar,std::string> grammar_map = {
     {BLOCK_EQ,"BLOCK_COMMAND"},
     {INLINE_EQ, "INLINE_COMMAND"},
     {WORD, "TEXT"},
@@ -87,7 +95,7 @@ inline void Parser::print_(){
 }
 
 inline void Parser::write_header(Token& current_token, size_t indx){
-    
+    indx++;
     std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
 

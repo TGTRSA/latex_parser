@@ -23,25 +23,27 @@ int main(int argc, char **argv) {
     std::cout << "File content: \n" << latex_input.content << std::endl;
 
     Document::full_ content =  lex_content(latex_input.content);
-    Parser p;
-    p.doc_content =content;
-    p.compile_latex();
+    // Parser p;
+    // p.doc_content =content;
+    // content = link(content);
+    // p.compile_latex();
     // p.print_();
-    Document::full_ doc_ = p.doc_content;
+    Document::full_ doc_ = content;
     Document::paragraph par = doc_[0];
     int par_len = par.size();
     //printing the parsed tokens
     for(int i = 0;i<par_len;i++)
     {
-        auto s  = par[i];
+        Document::sentence s  = par[i];
         int len_s = s.size();
         for(int j = 0; j<len_s ;j++)
         {
-            auto t =  s[j];
+            Token& t =  s[j];
             std::cout << "Token: " << t.data << "\n";
-            
         }
     } 
+    content = link(content);
+    std::cout << "Some token.right->data: " << &content[0][0][1].right->data << "\n";
 
     // size_t n_tokens = content[0].size();
     // for(size_t i=0;i<n_tokens;i++){
