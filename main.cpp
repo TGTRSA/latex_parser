@@ -42,8 +42,7 @@ int main(int argc, char **argv) {
             std::cout << "Token: " << t.data << "\n";
         }
     } 
-    content = link(content);
-    std::cout << "Some token.right->data: " << &content[0][0][1].right->data << "\n";
+    
 
     // size_t n_tokens = content[0].size();
     // for(size_t i=0;i<n_tokens;i++){

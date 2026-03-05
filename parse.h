@@ -41,33 +41,6 @@ namespace Document {
     using full_      = std::vector<paragraph>;  // complete document of paragraphs
 };
 
-inline Document::full_ link(Document::full_& document) { 
-        int u = 0;
-        ;
-        int next_token_indx = 1;
-        // int len_doc = document.size();
-        Document::paragraph& pars =  document.at(0);
-        int  len_p = pars.size();
-        for(int j=0;j<len_p;j++)
-        {
-            // std::cout << pars[j][j].data;
-            // std::cout << "Where tf i am ";
-            Document::sentence& s = pars[j];
-            int len_s = s.size();
-            while(u<len_s)
-            {
-                Token& c_token   = s[u];
-                if(next_token_indx<len_s-1){
-                    Token& n_token   = s[next_token_indx];
-                    c_token.right    = &n_token;
-                }
-                u++;
-            }
-        } 
-    
-     return document;
-}
-
 
 inline std::map<Grammar,std::string> grammar_map = {
     {BLOCK_EQ,"BLOCK_COMMAND"},
