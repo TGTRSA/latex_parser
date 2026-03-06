@@ -69,7 +69,7 @@ inline void Parser::print_(){
 }
 
 inline void Parser::write_header(Token& current_token, size_t p_indx, Document::paragraph par){
-    std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
+    std::string tmp_string = "\n\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
 
     if(par[p_indx+1][0].type!=HEADER)
@@ -239,7 +239,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             case '#':
             {
                 Token header = compile_header(i, file_content, len_content);
-                std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n"; 
+                // std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n"; 
                 s.push_back(header);
                 i = header.end_pos;
                 break;
@@ -247,7 +247,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             case '!':
             {
                 Token block = compile_block_equation(i, file_content, len_content);
-                std::cout << "Created block equation token now appending "<< block.data << " "<< grammar_map[block.type] << "\n";  
+                // std::cout << "Created block equation token now appending "<< block.data << " "<< grammar_map[block.type] << "\n";  
                 s.push_back(block);
                 i = block.end_pos;
                 break;
@@ -256,7 +256,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             {
                 Token inline_c = compile_inline_command(i, file_content, len_content);
                 s.push_back(inline_c);
-                std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;  
+                // std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;  
                 i=inline_c.end_pos;
                 break;
             }
@@ -268,6 +268,7 @@ inline Document::full_ lex_content(const std::string& file_content){
                 t.type = NEW_LINE;
                 t.start_pos = i;
                 t.end_pos = i; 
+                s.push_back(t);
                 p.push_back(s);
 
                 s.clear();
@@ -277,7 +278,7 @@ inline Document::full_ lex_content(const std::string& file_content){
             {
                 Token t = compile_word(i, file_content, len_content);
                 s.push_back(t);
-                std::cout << "Created word token now appending " << t.data << " " << grammar_map[t.type]; 
+                // std::cout << "Created word token now appending " << t.data << " " << grammar_map[t.type]; 
                 i = t.end_pos;
                 break;
             }
