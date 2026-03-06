@@ -15,6 +15,7 @@ enum Grammar{
     BLOCK_EQ,
     WORD,
     HEADER,
+    NEW_LINE,
 };
 
 // Describes the information for each item of the document \f
@@ -47,6 +48,7 @@ inline std::map<Grammar,std::string> grammar_map = {
     {INLINE_EQ, "INLINE_COMMAND"},
     {WORD, "TEXT"},
     {HEADER, "HEADER"},
+    {NEW_LINE, "NEW_LINE"},
 };
 
 
@@ -55,10 +57,9 @@ class Parser {
         Document::full_     doc_content;
         std::string         string_content;
         Token               current_token;
-        Document::sentence  sen;
         void print_();
         void compile_latex();
-        void write_header(Token& current_token, size_t indx);
+        void write_header(Token& current_token, size_t indx, Document::paragraph par);
 
 };
 
@@ -67,15 +68,14 @@ inline void Parser::print_(){
     std::cout << this->string_content;
 }
 
-inline void Parser::write_header(Token& current_token, size_t indx){
-    indx++;
+inline void Parser::write_header(Token& current_token, size_t p_indx, Document::paragraph par){
     std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
 
-    // if(this->sen[indx+1].type!=HEADER)
-    // {
-    //     string_content+="\\begin{document}\n";
-    // }
+    if(par[p_indx+1][0].type!=HEADER)
+    {
+        string_content+="\\begin{document}\n";
+    }
 }
 
 // writes the tokens to latex code and compiles 
@@ -89,17 +89,17 @@ inline void Parser::compile_latex(){
         Document::paragraph p = doc_content[p_indx];
 
         for(size_t s_indx = 0;s_indx<paragraphs;s_indx++){
-            this->sen = p[s_indx];
-            size_t sen_len = this->sen.size();
+            Document::sentence sen = p[s_indx];
+            size_t sen_len = sen.size();
 
             // writes to content per sentence
             for(size_t t_indx=0;t_indx<sen_len;t_indx++){
-                this->current_token = this->sen[t_indx];
+                this->current_token = sen[t_indx];
                 // size_t t_len = current_token.len();
                 switch (current_token.type) {
                     case HEADER:
                     {
-                        write_header(current_token, t_indx);
+                        write_header(current_token, t_indx, p);
                         break;
                     }
                     case INLINE_EQ:
@@ -263,6 +263,11 @@ inline Document::full_ lex_content(const std::string& file_content){
             case '\n':
             {
                 std::cout << "Found new paragraph\n";
+                Token t;
+                t.data = "\n";
+                t.type = NEW_LINE;
+                t.start_pos = i;
+                t.end_pos = i; 
                 p.push_back(s);
 
                 s.clear();

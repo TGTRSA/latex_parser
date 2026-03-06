@@ -23,36 +23,25 @@ int main(int argc, char **argv) {
     std::cout << "File content: \n" << latex_input.content << std::endl;
 
     Document::full_ content =  lex_content(latex_input.content);
-    // Parser p;
-    // p.doc_content =content;
+    Parser p;
+    p.doc_content =content;
     // content = link(content);
-    // p.compile_latex();
-    // p.print_();
-    Document::full_ doc_ = content;
-    Document::paragraph par = doc_[0];
-    int par_len = par.size();
-    //printing the parsed tokens
-    for(int i = 0;i<par_len;i++)
-    {
-        Document::sentence s  = par[i];
-        int len_s = s.size();
-        for(int j = 0; j<len_s ;j++)
-        {
-            Token& t =  s[j];
-            std::cout << "Token: " << t.data << "\n";
-        }
-    } 
-    
-
-    // size_t n_tokens = content[0].size();
-    // for(size_t i=0;i<n_tokens;i++){
-    //     std::cout << "Number of tokens: " << n_tokens << "\n";
-    //     std::cout << content[0][i][i].data << std::endl;
-    // }
-    // std::cout << content[0][0][1].data << " " << content[0][1][0].data << std::endl;
-    // std::vector<TokenContent::paragraph> linked_list =  parse(content);
-    // TokenContent::paragraph ll = linked_list[0];
-   
+    p.compile_latex();
+    p.print_();
+    // Document::full_ doc_ = content;
+    // Document::paragraph par = doc_[0];
+    // int par_len = par.size();
+    // //printing the parsed tokens
+    // for(int i = 0;i<par_len;i++)
+    // {
+    //     Document::sentence s  = par[i];
+    //     int len_s = s.size();
+    //     for(int j = 0; j<len_s ;j++)
+    //     {
+    //         Token& t =  s[j];
+    //         std::cout << "Token: " << t.data << "\n";
+    //     }
+    // } 
 
     return 0;
 }
