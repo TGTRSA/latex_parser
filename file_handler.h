@@ -37,9 +37,9 @@ struct File {
     std::string dir;        // solely used for directory
     
     // well ... im sure u can tell
-    void create(const char* filename,std::string directory, std::string filetype) {
-        this->path = directory + "/" + filename + filetype; 
-        this->dir = directory;
+    void create(const char* filename,std::string folder, std::string filetype=".tex") {
+        this->path = folder + "/" + filename + filetype; 
+        this->dir = folder;
         std::cout << "Attempting to create: " << path << std::endl;        
         std::ofstream file(this->path);
         file << content;
@@ -78,7 +78,6 @@ struct File {
             system(cmd_string.c_str());
         }
         // system(cmd_string.c_str());
-
     }
 
 };

@@ -26,8 +26,12 @@ int main(int argc, char **argv) {
     Parser p;
     p.doc_content =content;
     // content = link(content);
-    p.compile_latex();
+    std::string latex_code =  p.compile_latex();
     p.print_();
+
+    File f;
+    f.create(textfile, "latex_files");
+
     // Document::full_ doc_ = content;
     // Document::paragraph par = doc_[0];
     // int par_len = par.size();
