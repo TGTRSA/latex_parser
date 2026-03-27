@@ -1,2 +1,2 @@
 #include {chemfig}
-This is some very basic latex ! \int_C x^2 dx !  
+This is some very basic latex ! \int_C x^2 dx !

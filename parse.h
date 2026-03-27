@@ -160,28 +160,30 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
     return t;
 }
 
-inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, size_t len_content){
+inline Token compile_inline_command(size_t& c_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
     // size_t len_con = contents.size();
-    t.start_pos = inline_pos+1;
-    inline_pos++;
+    t.start_pos = c_pos;
     std::string tmp_string;
-    while(inline_pos<len_content){
-        char c = contents[inline_pos];
+    c_pos++;
+    while(c_pos<len_content){
+        char c = contents[c_pos];
+        std::cout << "char: " << c << "\n";
         if(c!=' '){
             tmp_string+=c;
+            std::cout << "tmp_string " <<tmp_string <<"\n";
+
         }
         if(c == '$'){
-            std::cout << "Character at new position: " << contents[inline_pos+1] << "\n";
-            std::cout << "The data for the inline command " << tmp_string << "\n";
-            t.end_pos   = inline_pos + 1;
-            t.data = tmp_string;
+            std::cout   << "Character at new position: " << contents[c_pos+1] << "\n";
+            std::cout   << "The data for the inline command " << tmp_string << "\n";
+            t.end_pos   = c_pos + 1;
+            t.data      = tmp_string;
             t.type      = INLINE_EQ;
             break;
         }
-
-        t.data+=c;
-        inline_pos++;
+        tmp_string+=c;
+        c_pos++;
     }
     return t;
 }
@@ -274,7 +276,6 @@ inline Document::full_ lex_content(const std::string& file_content){
                     Token header = compile_header(i, file_content, len_content);
                     std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n";
                     s.push_back(header);
-
                     i = header.end_pos;
                     std::cout << "New character position(i): " << i << " vs " << header.end_pos <<"\n";
                     break;
@@ -282,7 +283,7 @@ inline Document::full_ lex_content(const std::string& file_content){
                 case '!':
                 {
                     Token block = compile_block_equation(i, file_content, len_content);
-                    // std::cout << "Created block equation token now appending "<< block.data << " "<< grammar_map[block.type] << "\n";
+                    std::cout << "Created block equation token now appending " << block.data << " "<< grammar_map[block.type] << "\n";
                     s.push_back(block);
                     i = block.end_pos;
                     break;
