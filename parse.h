@@ -163,15 +163,23 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
 inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
     // size_t len_con = contents.size();
-    t.start_pos = inline_pos;
+    t.start_pos = inline_pos+1;
     inline_pos++;
+    std::string tmp_string;
     while(inline_pos<len_content){
         char c = contents[inline_pos];
+        if(c!=' '){
+            tmp_string+=c;
+        }
         if(c == '$'){
-            t.end_pos   = inline_pos;
+            std::cout << "Character at new position: " << contents[inline_pos+1] << "\n";
+            std::cout << "The data for the inline command " << tmp_string << "\n";
+            t.end_pos   = inline_pos + 1;
+            t.data = tmp_string;
             t.type      = INLINE_EQ;
             break;
         }
+
         t.data+=c;
         inline_pos++;
     }
@@ -281,9 +289,10 @@ inline Document::full_ lex_content(const std::string& file_content){
                 }
                 case '$':
                 {
+                    std::cout << "Starting inline compile\n";
                     Token inline_c = compile_inline_command(i, file_content, len_content);
                     s.push_back(inline_c);
-                    // std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;
+                    std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;
                     i=inline_c.end_pos;
                     break;
                 }
