@@ -4,7 +4,7 @@
 #include <iostream>
 #include "file_handler.h"
 #include "parse.h"
-
+#include "string_lib.h"
 // *** [TODO]:
 // * [X]          Recognise block equation
 // * [X]          Write equation block
@@ -30,7 +30,12 @@ int main(int argc, char **argv) {
     p.print_();
 
     File f;
-    f.create(textfile, "latex_files");
+
+    if(endsin(argv[1],".txt" )){
+        std::string t = replace(argv[1], ".txt", "");
+        std::cout << t << "\n";
+    }
+    // f.create(textfile, "latex_files");
 
     // Document::full_ doc_ = content;
     // Document::paragraph par = doc_[0];
@@ -45,7 +50,7 @@ int main(int argc, char **argv) {
     //         Token& t =  s[j];
     //         std::cout << "Token: " << t.data << "\n";
     //     }
-    // } 
+    // }
 
     return 0;
 }
