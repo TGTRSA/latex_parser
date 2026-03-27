@@ -227,11 +227,19 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
         h_p+=1;
         while(h_p<len_content){
             char c = contents[h_p];
+            std::cout << "Header char pos: " << h_p << "\n";
             if(c=='}'){
                 t.type = HEADER;
+                std::cout << "The character position its meant to be: " << h_p << "\n";
                 t.end_pos = h_p;
                 std::cout << "Header end position: " << t.end_pos << "\n";
                 break;
+            }else if(c == ' '){
+                t.type = HEADER;
+                std::cout << "The character position its meant to be: " << h_p << "\n";
+                t.end_pos = h_p;
+                std::cout << "Header end position: " << t.end_pos << "\n";
+
             }
             t.data+=c;
             h_p++;
