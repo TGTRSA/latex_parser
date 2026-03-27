@@ -71,7 +71,7 @@ inline void Parser::print_(){
 }
 
 inline void Parser::write_header(Token& current_token, size_t p_indx, Document::paragraph par){
-    std::string tmp_string = "\n\\usepackage{" + current_token.data + "}\n";
+    std::string tmp_string = "\n\\usepackage" + current_token.data + "}\n";
     string_content+=tmp_string;
 
     if(par[p_indx+1][0].type!=HEADER)
@@ -125,7 +125,7 @@ inline std::string  Parser::compile_latex(){
                     {
                         tmp_string = current_token.data;
                         string_content+=tmp_string;
-                        break;
+
                     }
 
                 }
@@ -224,12 +224,13 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
     }else{
         // ? at this point header_pos is at a space ' ' which will be followed by {} which means i should skip +2 because '#{chemfig}
         std::cout << "The package is going to be a header\n";
-        h_p+=2;
+        h_p+=1;
         while(h_p<len_content){
             char c = contents[h_p];
             if(c=='}'){
                 t.type = HEADER;
                 t.end_pos = h_p;
+                std::cout << "Header end position: " << t.end_pos << "\n";
                 break;
             }
             t.data+=c;
@@ -255,9 +256,11 @@ inline Document::full_ lex_content(const std::string& file_content){
                 case '#':
                 {
                     Token header = compile_header(i, file_content, len_content);
-                    // std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n";
+                    std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n";
                     s.push_back(header);
+
                     i = header.end_pos;
+                    std::cout << "New character position(i): " << i << " vs " << header.end_pos <<"\n";
                     break;
                 }
                 case '!':
@@ -316,7 +319,7 @@ inline Document::full_ lex_content(const std::string& file_content){
     for(int i = 0 ; i<l_p;i++){
         int paragraphs = full_[0].size();
         Document::paragraph p = full_[i];
-        printf("len of paragraphs: %d", paragraphs);
+        printf("Length of paragraphs: %d\n", paragraphs);
         for(int j = 0;j<paragraphs;j++){
             Document::sentence sen = p[j];
             int sen_len = sen.size();
