@@ -151,7 +151,7 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
         char c = contents[c_pos];
         if(c=='!'){
             t.type      = BLOCK_EQ;
-            t.end_pos   = c_pos;
+            t.end_pos   = c_pos+1;
             break;
         }
         t.data+=c;
@@ -313,7 +313,7 @@ inline Document::full_ lex_content(const std::string& file_content){
     for(int i = 0 ; i<l_p;i++){
         int paragraphs = full_[0].size();
         Document::paragraph p = full_[i];
-        printf("len of paragraphs: %d", paragraphs);
+        printf("Length of paragraphs: %d\n", paragraphs);
         for(int j = 0;j<paragraphs;j++){
             Document::sentence sen = p[j];
             int sen_len = sen.size();
