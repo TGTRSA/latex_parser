@@ -1,3 +1,4 @@
+
 #ifndef PARSER_H
 #define PARSER_H
 #include "useful_funcs.h"
@@ -71,7 +72,7 @@ inline void Parser::print_(){
 }
 
 inline void Parser::write_header(Token& current_token, size_t p_indx, Document::paragraph par){
-    std::string tmp_string = "\n\\usepackage" + current_token.data + "}\n";
+    std::string tmp_string = "\n\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
 
     if(par[p_indx+1][0].type!=HEADER)
@@ -125,7 +126,7 @@ inline std::string  Parser::compile_latex(){
                     {
                         tmp_string = current_token.data;
                         string_content+=tmp_string;
-
+                        break;
                     }
 
                 }
@@ -160,30 +161,20 @@ inline Token compile_block_equation(size_t& c_pos, const std::string& contents, 
     return t;
 }
 
-inline Token compile_inline_command(size_t& c_pos, const std::string& contents, size_t len_content){
+inline Token compile_inline_command(size_t& inline_pos, const std::string& contents, size_t len_content){
     Document::identifier t;
     // size_t len_con = contents.size();
-    t.start_pos = c_pos;
-    std::string tmp_string;
-    c_pos++;
-    while(c_pos<len_content){
-        char c = contents[c_pos];
-        std::cout << "char: " << c << "\n";
-        if(c!=' '){
-            tmp_string+=c;
-            std::cout << "tmp_string " <<tmp_string <<"\n";
-
-        }
+    t.start_pos = inline_pos;
+    inline_pos++;
+    while(inline_pos<len_content){
+        char c = contents[inline_pos];
         if(c == '$'){
-            std::cout   << "Character at new position: " << contents[c_pos+1] << "\n";
-            std::cout   << "The data for the inline command " << tmp_string << "\n";
-            t.end_pos   = c_pos + 1;
-            t.data      = tmp_string;
+            t.end_pos   = inline_pos;
             t.type      = INLINE_EQ;
             break;
         }
-        tmp_string+=c;
-        c_pos++;
+        t.data+=c;
+        inline_pos++;
     }
     return t;
 }
@@ -216,9 +207,7 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
     Document::identifier t;
     while(h_p<len_content){
         char c = contents[h_p];
-
         if(c==' '){
-            std::cout << tmp_string << "\n";
             break;
         }
         tmp_string+=c;
@@ -227,29 +216,18 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
     bool b_header =  check_if_header(tmp_string);
     if(!b_header){
         // not a header so delegate to compile word
-        std::cout <<  "Not a header\n";
         header_pos-=1;
         t = compile_word(header_pos,contents, len_content);
         return t;
     }else{
         // ? at this point header_pos is at a space ' ' which will be followed by {} which means i should skip +2 because '#{chemfig}
-        std::cout << "The package is going to be a header\n";
-        h_p+=1;
+        h_p+=2;
         while(h_p<len_content){
             char c = contents[h_p];
-            std::cout << "Header char pos: " << h_p << "\n";
             if(c=='}'){
                 t.type = HEADER;
-                std::cout << "The character position its meant to be: " << h_p << "\n";
                 t.end_pos = h_p;
-                std::cout << "Header end position: " << t.end_pos << "\n";
                 break;
-            }else if(c == ' '){
-                t.type = HEADER;
-                std::cout << "The character position its meant to be: " << h_p << "\n";
-                t.end_pos = h_p;
-                std::cout << "Header end position: " << t.end_pos << "\n";
-
             }
             t.data+=c;
             h_p++;
@@ -274,26 +252,24 @@ inline Document::full_ lex_content(const std::string& file_content){
                 case '#':
                 {
                     Token header = compile_header(i, file_content, len_content);
-                    std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n";
+                    // std::cout << "Created header token now appending: " <<header.data << " " <<  grammar_map[header.type] << "\n";
                     s.push_back(header);
                     i = header.end_pos;
-                    std::cout << "New character position(i): " << i << " vs " << header.end_pos <<"\n";
                     break;
                 }
                 case '!':
                 {
                     Token block = compile_block_equation(i, file_content, len_content);
-                    std::cout << "Created block equation token now appending " << block.data << " "<< grammar_map[block.type] << "\n";
+                    // std::cout << "Created block equation token now appending "<< block.data << " "<< grammar_map[block.type] << "\n";
                     s.push_back(block);
                     i = block.end_pos;
                     break;
                 }
                 case '$':
                 {
-                    std::cout << "Starting inline compile\n";
                     Token inline_c = compile_inline_command(i, file_content, len_content);
                     s.push_back(inline_c);
-                    std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;
+                    // std::cout << "Created inline equation token now appending "<< inline_c.data << " "<< grammar_map[inline_c.type] << std::endl;
                     i=inline_c.end_pos;
                     break;
                 }
@@ -337,7 +313,7 @@ inline Document::full_ lex_content(const std::string& file_content){
     for(int i = 0 ; i<l_p;i++){
         int paragraphs = full_[0].size();
         Document::paragraph p = full_[i];
-        printf("Length of paragraphs: %d\n", paragraphs);
+        printf("len of paragraphs: %d", paragraphs);
         for(int j = 0;j<paragraphs;j++){
             Document::sentence sen = p[j];
             int sen_len = sen.size();
