@@ -11,30 +11,37 @@
 // * [X]          Write inline
 // * [X]          Add support for more libs - chemfig etc ...
 // * [X]          Construct the full document
-// * []           Take into account the end of paragraphs so you can add "\n"
+// * [X]           Take into account the end of paragraphs so you can add "\n"
 // * []          Write latex compile pipeline
 // * []          Impliment writing only differences instead of while document
 
-int main(int argc, char **argv) {
-    std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
-    char *textfile = argv[1];
-    InputFile latex_input;
-    latex_input.get_file_contents(textfile);
-    std::cout << "File content: \n" << latex_input.content << std::endl;
+std::string latex_string = R"(
+#include{chemfig}
+This is a latex command block ! \int !
 
-    Document::full_ content =  lex_content(latex_input.content);
+This is the second paragraph $ \int c dx $
+)";
+
+int main() {
+    //std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
+    //char *textfile = argv[1];
+   // InputFile latex_input;
+ //   latex_input.get_file_contents(latex_string);
+    //std::cout << "File content: \n" << latex_input.content << std::endl;
+
+    Document::full_ content =  lex_content(latex_string);
     Parser p;
     p.doc_content =content;
     // content = link(content);
     std::string latex_code =  p.compile_latex();
     p.print_();
 
-    File f;
+    //File f;
 
-    if(endsin(argv[1],".txt" )){
-        std::string t = replace(argv[1], ".txt", "");
-        std::cout << t << "\n";
-    }
+    //if(endsin(argv[1],".txt" )){
+      //  std::string t = replace(argv[1], ".txt", "");
+        //std::cout << t << "\n";
+    //}
     // f.create(textfile, "latex_files");
 
     // Document::full_ doc_ = content;
