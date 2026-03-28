@@ -62,7 +62,7 @@ class Parser {
         Token               current_token;
         void print_();
         std::string compile_latex();
-        void write_header(Token& current_token, size_t indx, Document::paragraph par);
+        void write_header(Token& current_token);
 
 };
 
@@ -71,26 +71,21 @@ inline void Parser::print_(){
     std::cout << this->string_content;
 }
 
-inline void Parser::write_header(Token& current_token, size_t p_indx, Document::paragraph par){
-    std::string tmp_string = "\n\\usepackage{" + current_token.data + "}\n";
+inline void Parser::write_header(Token& current_token){
+    std::string tmp_string = "\\usepackage{" + current_token.data + "}\n";
     string_content+=tmp_string;
-
-    if(par[p_indx+1][0].type!=HEADER)
-    {
-        string_content+="\\begin{document}\n";
-    }
 }
 
 // writes the tokens to latex code and compiles
 inline std::string  Parser::compile_latex(){
-    this->string_content+="\\documentclass{article}";
+    this->string_content+="\\documentclass{article}\n";
     std::string header_files;
     size_t l_p = this->doc_content.size();
 
     for(size_t p_indx = 0 ; p_indx<l_p;p_indx++){
         size_t paragraphs = doc_content[p_indx].size();
         Document::paragraph p = doc_content[p_indx];
-
+        bool begin_doc = false;
         for(size_t s_indx = 0;s_indx<paragraphs;s_indx++){
             Document::sentence sen = p[s_indx];
             size_t sen_len = sen.size();
@@ -99,10 +94,11 @@ inline std::string  Parser::compile_latex(){
             for(size_t t_indx=0;t_indx<sen_len;t_indx++){
                 this->current_token = sen[t_indx];
                 // size_t t_len = current_token.len();
+                // first check if there is a header as the first token (if there arent headers we should not skip begin document)
                 switch (current_token.type) {
                     case HEADER:
                     {
-                        write_header(current_token, t_indx, p);
+                        write_header(current_token);
                         break;
                     }
                     case INLINE_EQ:
@@ -124,6 +120,10 @@ inline std::string  Parser::compile_latex(){
                     }
                  default:
                     {
+                        if(!begin_doc){
+                            this->string_content+="\n\\begin{document}";
+                            begin_doc=true;
+                        }
                         tmp_string = current_token.data;
                         string_content+=tmp_string;
                         break;
