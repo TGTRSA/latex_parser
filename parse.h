@@ -220,11 +220,12 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
         t = compile_word(header_pos,contents, len_content);
         return t;
     }else{
-        // ? at this point header_pos is at a space ' ' which will be followed by {} which means i should skip +2 because '#{chemfig}
-        h_p+=2;
+        // ? at this point header_pos is at a space ' ' or "{" which will be followed by {} which means i should skip +2 because '#{chemfig}
+        h_p+=1;
         while(h_p<len_content){
             char c = contents[h_p];
             if(c=='}'){
+
                 t.type = HEADER;
                 t.end_pos = h_p;
                 break;
