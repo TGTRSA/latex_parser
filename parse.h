@@ -207,7 +207,7 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
     Document::identifier t;
     while(h_p<len_content){
         char c = contents[h_p];
-        if(c==' '){
+        if(c==' ' or c=='{'){
             break;
         }
         tmp_string+=c;
@@ -228,6 +228,8 @@ inline Token compile_header(size_t& header_pos, const std::string& contents, siz
                 t.type = HEADER;
                 t.end_pos = h_p;
                 break;
+            }else if(c=='\n'){
+                std::cout << "Error: Incorrect inclusion of header\n";
             }
             t.data+=c;
             h_p++;
