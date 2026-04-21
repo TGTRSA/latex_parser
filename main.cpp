@@ -22,6 +22,14 @@ This is a latex command block ! \int !
 This is the second paragraph $ \int c dx $
 )";
 
+std::string latex_string2 = R"(
+#include {chemfig}
+
+This is a latex command block ! \int x^2 !
+
+This is the second paragraph $ \int c dx $
+)";
+
 int main() {
     //std::cout << "The name of the file with " << argc << " number of chars is " << argv[1] << std::endl;
     //char *textfile = argv[1];

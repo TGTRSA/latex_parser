@@ -121,7 +121,7 @@ inline std::string  Parser::compile_latex(){
                  default:
                     {
                         if(!begin_doc){
-                            this->string_content+="\n\\begin{document}";
+                            this->string_content+="\\begin{document}";
                             begin_doc=true;
                         }
                         tmp_string = current_token.data;
