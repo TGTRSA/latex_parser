@@ -8,6 +8,9 @@
 // #include <cstdio>
 #include "string.h"
 
+#define GREEN "\x1b[33m"
+#define RESET "\x1b[0m"
+
 enum TOKEN_TYPE {
     HEADER,
     BLOCK_EQ,

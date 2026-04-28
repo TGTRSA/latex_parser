@@ -1,0 +1,11 @@
+
+# Doxygen generated files
+html/
+latex/
+Doxyfile
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+
