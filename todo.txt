@@ -1,0 +1,2 @@
+[X] Create text cases for strings that could break the parser?? like in the case of:
+    "#{ continuing on with my document.\n"  until the end of content len
