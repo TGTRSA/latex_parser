@@ -47,6 +47,17 @@ bool is_cmd(char c){
     }
 }
 
+bool is_header(char c){
+    switch (c){
+        case '}':{
+            return true;
+        }
+        case '.':
+        default:{
+            return false;
+        }
+    }
+}
 
 char* init_buf(size_t len_content, size_t *pos){
     size_t len_buf = len_content-*pos;
@@ -61,7 +72,7 @@ void compile_inline(char *content, size_t *c_position, size_t len_content, Token
     char inline_char = '$';
     bool inline_eq;
     char *buffer =init_buf(len_content, c_position);
-    printf("[DEBUG] Initiail buffer size:");
+    printf("[DEBUG] Initial buffer size:");
     size_t i = 0;
 
     // *** Starting ahead of bang
@@ -96,6 +107,52 @@ void compile_inline(char *content, size_t *c_position, size_t len_content, Token
     printf("buffer: %s\n", buffer);
     free(buffer);
     printf("Freeing buffer\n");
+}
+
+bool compile_header(char *content, size_t *c_position, size_t len_content, Token *t){
+    char inline_char = '}';
+    bool header;
+    char *buffer =init_buf(len_content, c_position);
+    printf("[DEBUG] Initial buffer size:");
+    size_t i = 0;
+
+    // *** check char after # should be } if header else
+    *c_position+=1;
+    if(content[*c_position]=='}'){
+        while(*c_position < len_content){
+            // printf("[DEBUG]Current buffer: %s at position %zu\n", buffer, *c_position);
+            header = is_header(content[*c_position]);
+            if(header){
+                // resizing the buffer to be only the size of the content
+                printf("Number of characters %zu\n", i);
+                printf("Size buffer should be %zu\n", i);
+
+                buffer = realloc(buffer,i + 1);
+                buffer[i] = '\0';
+                if(!buffer) {printf("Error reallocating buffer\n"); free(buffer); exit(1);}
+
+                printf("[DEBUG] New buffer size: %zu\n",strlen(buffer));
+                printf("\t[DEBUG] Buffer after reallocation: %s\n[DEBUG] Writing %zu into buffer(%zu bytes)\n",buffer,i, strlen(buffer));
+
+                strcpy(t->data ,buffer);
+                t->attrib = HEADER;
+                *c_position=*c_position+1;
+                break;
+            }
+            // feeding each char to the buffer
+            buffer[i] = content[*c_position];
+            *c_position=*c_position+1;
+            i++;
+        }
+        printf("buffer: %s\n", buffer);
+        free(buffer);
+        printf("Freeing buffer\n");
+            return true;
+    }else {
+        return false;
+    }
+
+    
 }
 
 // @ params uses the content of the full text
