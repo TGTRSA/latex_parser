@@ -4,6 +4,7 @@
 #include "stddef.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "math.h"
 #include "stdbool.h"
 // #include <cstdio>
 #include "string.h"
@@ -24,11 +25,11 @@ typedef struct Token {
     char *data;
 }Token;
 
-bool is_header(char c);
+bool is_header( size_t content_len, size_t *c_pos, char* content);
 
-bool is_cmd(char c);
+bool is_cmd( size_t content_len, size_t *c_pos, char* content);
 
-bool is_inline(char c);
+bool in_inline( size_t content_len, size_t *c_pos, char* content);
 
 void compile_inline(char *content, size_t *position, size_t len_content, Token *t, char* buffer);
 
@@ -36,7 +37,7 @@ void compile_header(char *content, size_t *position, size_t len_content, Token *
 
 void compile_text(char *content, size_t *position, size_t len_content, Token *t);
 
-void compile_command(char *content, size_t *position, size_t len_content, Token *t, char* buffer);
+void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, size_t *end_pos);
 
 void lex_content(char *content);
 
