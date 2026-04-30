@@ -64,7 +64,6 @@ ssize_t is_header(size_t content_len, size_t c_pos, char* content){
     return -1;
 }
 
-
 char* init_buf(size_t i_pos, size_t end_pos){
     // creating the buffer of the size between beginning and end of command: higher-lower bc we are using unsigned ints
     size_t len_buf = end_pos - i_pos;
@@ -73,22 +72,6 @@ char* init_buf(size_t i_pos, size_t end_pos){
     char *buf = (char *)malloc(len_buf+1);
     buf[len_buf] = '\0';
     return buf;
-}
-
-void compile_inline(char *content, size_t c_position, size_t len_content, Token *t, char* buf){
-    char inline_char = '$';
-    bool inline_eq;
-    char *buffer =init_buf(len_content, c_position);
-    printf("[DEBUG] Initial buffer size:");
-    size_t i = 0;
-
-    // *** Starting ahead of bang
-    c_position+=1;
-    // printf("c_pos: ")
-    while(c_position < len_content){
-        ;
-    }
-
 }
 
 void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos){
@@ -111,9 +94,10 @@ void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, s
     }
     printf("[DEBUG] About to free buffer at %p\n", buffer);
     printf("t.data: %p, buf: %p\n", t->data, buffer);                    
+    t->data = malloc(strlen(buffer)+1);
+    strcpy(t->data,buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
-    strcpy(t->data,buffer);
 }
     
 
@@ -135,9 +119,10 @@ void compile_text(char *content, Token *t,  size_t *c_pos, size_t len_content){
         initial_pos+=1;
         buffer_indx++;
     }
+    t->data = malloc(strlen(buffer));
     strcpy(t->data,buffer);
     printf("buffer: %s\n\n", buffer);
-    printf("t.data: %p, buf: %p\n", t->data, buffer);
+    printf("t.data: %p (%s), buf: %p\n", t->data, t->data, buffer);
     printf("[DEBUG] About to free buffer at %p\n", buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
@@ -158,6 +143,7 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
     printf("Buffer: %s\n", buffer);
     printf("[DEBUG] About to free buffer at %p\n", buffer);
     printf("t.data: %p(p) %s(s), buf: %p\n", t->data, t->data, buffer);
+    t->data = malloc(strlen(buffer)+1); 
     strcpy(t->data,buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
@@ -282,34 +268,31 @@ void lex_content(char *content, token_container *container){
 
     container->tokens[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
     printf("container[3]: %s\n", container->tokens[1].data);
-    // int i;
-    // for(i=0;i<n_tokens;i++){
-    //     printf("container[%i]: %s\n", i, container[i].data);
-    // }
-    // for(i=0;i<n_tokens+1;i++){
-    //     switch (container[i].attrib) {
-    //         case HEADER:
-    //         {
-    //             printf("HEADER(%s)", container[i].data);
-    //             break;
-    //         }
-    //         case INLINE_EQ:{
-    //             printf("INLINE_EQ(%s)", container[i].data);
-    //             break;
-    //         }
-    //         case BLOCK_EQ:{
-    //             printf("BLOCK_EQ(%s)", container[i].data);
-    //             break;
-    //         }
-    //         case NEW_LINE:{
-    //             printf("NEW_LINE(%s)", container[i].data);
-    //             break;
-    //         }
-    //         default :{
-    //             printf("TEXT(%s)", container[i].data);
-    //             break;
-    //         }
+    int i;
+    for(i=0;i<n_tokens+1;i++){
+        switch (container->tokens[i].attrib) {
+            case HEADER:
+            {
+                printf("HEADER(%s)\n", container->tokens[i].data);
+                break;
+            }
+            case INLINE_EQ:{
+                printf("INLINE_EQ(%s)\n", container->tokens[i].data);
+                break;
+            }
+            case BLOCK_EQ:{
+                printf("BLOCK_EQ(%s)\n", container->tokens[i].data);
+                break;
+            }
+            case NEW_LINE:{
+                printf("NEW_LINE(%s)\n", container->tokens[i].data);
+                break;
+            }
+            default :{
+                printf("TEXT(%s)\n", container->tokens[i].data);
+                break;
+            }
             
-    //     }
-    // }
+        }
+    }
 }
