@@ -26,6 +26,11 @@ typedef struct Token {
     char *data;
 }Token;
 
+typedef struct TokenContainer {
+    size_t length;
+    Token* tokens;
+}token_container;
+
 ssize_t is_header(size_t content_len, size_t c_pos, char* content);
 
 ssize_t is_cmd( size_t content_len, size_t c_pos, char* content);

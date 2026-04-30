@@ -104,7 +104,7 @@ void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, s
     initial_pos+=1;
     while(initial_pos != end_pos){
         buffer[buffer_indx] = content[initial_pos];
-        printf("Current buffer: %s\n", buffer);
+        // printf("Current buffer: %s\n", buffer);
         initial_pos+=1;
         buffer_indx++;
     }
@@ -116,11 +116,17 @@ void compile_text(char *content, Token *t, char* buffer, size_t initial_pos, siz
     size_t buffer_indx = 0;
     while(initial_pos != end_pos){
         buffer[buffer_indx] = content[initial_pos];
-        printf("Current buffer: %s\n", buffer);
+        // printf("Current buffer: %s\n", buffer);
         initial_pos+=1;
         buffer_indx++;
     }
     strcpy(t->data,buffer);
+    printf("buffer: %s\n\n", buffer);
+    printf("t.data: %p, buf: %p\n", t->data, buffer);
+    printf("[DEBUG] About to free buffer at %p\n", buffer);
+    free(buffer);
+    printf("[DEBUG] Freed buffer\n");
+    t->attrib = TEXT;
 };
 
 // @ params uses the content of the full text
@@ -128,9 +134,9 @@ void compile_text(char *content, Token *t, char* buffer, size_t initial_pos, siz
 void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos){
     initial_pos++;
     size_t buffer_indx = 0;
-    while(initial_pos != end_pos){
+    while(initial_pos < end_pos){
         buffer[buffer_indx] = content[initial_pos];
-        printf("Current buffer: %s\n", buffer);
+        // printf("Current buffer: %s\n", buffer);
         initial_pos+=1;
         buffer_indx++;
     }
@@ -143,9 +149,12 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
 void lex_content(char *content){
     size_t len_content, pos;
     len_content = strlen(content);
-    int n_tokens;
-    Token *container = (Token *)(malloc(len_content/2));
+    size_t n_tokens = 0;
+    token_container container; 
+    container.tokens = (malloc( len_content * sizeof(Token)));
+    // Token token_array[len_content/2];
     size_t buffer_indx = 0;
+    
     for(pos = 0; pos<len_content; pos++){
         n_tokens++;
         switch (content[pos]) {
@@ -154,21 +163,28 @@ void lex_content(char *content){
                 Token t;
                 printf("[DEBUG] Possible header found\n");
                 ssize_t header_end_pos = is_header(len_content,pos,content);
-                if(header_end_pos>0){
-                    char* buffer = init_buf(pos,header_end_pos);
+                if(header_end_pos>=0){
+
+                    char* buf = init_buf(pos,header_end_pos);
                     printf("[DEBUG] Initial pos %zu: \n\tNew pos: %zu\n", pos, header_end_pos);
-                    compile_header(content, &t, buffer,pos,header_end_pos);
-                    printf("\t[DEBUG]End pos content[%zu]: %c\n", header_end_pos, content[header_end_pos]);
-                    // buffer = " ";
-                    free(buffer);
-                    t.attrib = HEADER; 
+
+                    compile_header(content, &t, buf,pos,header_end_pos);
+
+                    printf("\t[DEBUG]End pos content[%zu]: %c\n\n", header_end_pos, content[header_end_pos]);
+
+                    printf("[DEBUG] About to free buffer at %p\n", buf);
+                    printf("t.data: %p, buf: %p\n", t.data, buf);
+                    free(buf);
+                    printf("[DEBUG] Freed buffer\n");
+                    t.attrib = HEADER;         
                     if(header_end_pos!=len_content && len_content != header_end_pos +1 ){
-                        pos = header_end_pos+2;
+                        pos = header_end_pos+1;
                     }
                 }else{
                     ;
                 }
-                container[buffer_indx] = t;
+                container.tokens[buffer_indx] = t;
+                buffer_indx = buffer_indx + 1;
                 break;
             }
             case '$':
@@ -176,15 +192,23 @@ void lex_content(char *content){
                 Token t;
                 ssize_t end_pos  = is_inline_eq(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
-                if(end_pos>0){    
+
+                if(end_pos>=0){    
+
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
+
                     char* buf = init_buf(pos,end_pos); 
                     compile_command(content,&t,buf,  pos, end_pos);
+                    printf("[DEBUG] About to free buffer at %p\n", buf);
+                    printf("t.data: %p, buf: %p\n", t.data, buf);                    
                     free(buf);
-                    printf("Freeing buffer\n");
+                    printf("[DEBUG] Freed buffer\n");
+
                     printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
+
                     t.attrib = INLINE_EQ;
+                    
                     if(end_pos != len_content && end_pos + 1 != len_content){
                         pos = end_pos + 1;
                     }
@@ -193,7 +217,8 @@ void lex_content(char *content){
                     ;
                 }       
                 printf("Equation data: %s\n\n", t.data);
-                container[buffer_indx] = t;
+                // container[buffer_indx] = t;
+                // buffer_indx = buffer_indx + 1;                
                 break;
             }
             case '!':
@@ -202,22 +227,32 @@ void lex_content(char *content){
                 ssize_t end_pos  = is_cmd(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
                 if(end_pos>=0){    
+
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
+
                     char* buf = init_buf(pos,end_pos); 
                     compile_command(content,&t,buf,  pos, end_pos);
+                    printf("[DEBUG] About to free buffer at %p\n", buf);
+                    printf("t.data: %p, buf: %p\n", t.data, buf);
+                    
                     free(buf);
-                    printf("Freeing buffer\n");
+                
+                    printf("[DEBUG] Freed buffer\n");
                     printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
+
                     t.attrib = BLOCK_EQ;
+                    
                     if(end_pos != len_content && end_pos + 1 != len_content){
                         pos = end_pos + 1;
                     }
                     // Should print empty space or random char
                 }else {
-                    printf("[DEBUG] Not a header at %zu \n", pos);
+                    printf("[DEBUG] Not a header at %zu \n\n", pos);
                 }       
-                container[buffer_indx] = t;
+                container.tokens[buffer_indx] = t;
+                buffer_indx = buffer_indx + 1;
+
                 printf("Block equation data: %s\n\n", t.data);
                 break;
             }
@@ -226,50 +261,44 @@ void lex_content(char *content){
             }
             default:
             {
-                Token t;
-                size_t i_pos=pos;
-                while(content[pos]!=' '){
-                    pos++;
-                    // buf+= content[pos];
-                }
-                char* buf = init_buf( i_pos, pos);
-                compile_text(content,  &t,buf, i_pos, pos);
-                t.attrib = TEXT;
-                printf("buffer: %s\n", buf);
-                free(buf);
-                container[buffer_indx] = t;                
+                ;
+
             }
         }
     }
 
-    container = realloc(container,n_tokens+1);
-    container[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
-    printf("container[0]: %s\n", container[0].data);
-    int i;
-    for(i=0;i<n_tokens+1;i++){
-        switch (container[i].attrib) {
-            case HEADER:
-            {
-                printf("HEADER(%s)", container[i].data);
-                break;
-            }
-            case INLINE_EQ:{
-                printf("INLINE_EQ(%s)", container[i].data);
-                break;
-            }
-            case BLOCK_EQ:{
-                printf("BLOCK_EQ(%s)", container[i].data);
-                break;
-            }
-            case NEW_LINE:{
-                printf("NEW_LINE(%s)", container[i].data);
-                break;
-            }
-            default :{
-                printf("TEXT(%s)", container[i].data);
-                break;
-            }
+    container.tokens = realloc(container.tokens,(n_tokens+1) * sizeof(Token));
+
+    container.tokens[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
+    printf("container[1]: %s\n", container.tokens[1].data);
+    // int i;
+    // for(i=0;i<n_tokens;i++){
+    //     printf("container[%i]: %s\n", i, container[i].data);
+    // }
+    // for(i=0;i<n_tokens+1;i++){
+    //     switch (container[i].attrib) {
+    //         case HEADER:
+    //         {
+    //             printf("HEADER(%s)", container[i].data);
+    //             break;
+    //         }
+    //         case INLINE_EQ:{
+    //             printf("INLINE_EQ(%s)", container[i].data);
+    //             break;
+    //         }
+    //         case BLOCK_EQ:{
+    //             printf("BLOCK_EQ(%s)", container[i].data);
+    //             break;
+    //         }
+    //         case NEW_LINE:{
+    //             printf("NEW_LINE(%s)", container[i].data);
+    //             break;
+    //         }
+    //         default :{
+    //             printf("TEXT(%s)", container[i].data);
+    //             break;
+    //         }
             
-        }
-    }
+    //     }
+    // }
 }
