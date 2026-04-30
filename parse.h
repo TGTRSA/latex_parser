@@ -26,15 +26,15 @@ typedef struct Token {
     char *data;
 }Token;
 
-bool is_header( size_t content_len, size_t c_pos, char* content);
+ssize_t is_header(size_t content_len, size_t c_pos, char* content);
 
 ssize_t is_cmd( size_t content_len, size_t c_pos, char* content);
 
-bool in_inline( size_t content_len, size_t c_pos, char* content);
+ssize_t is_inline_eq( size_t content_len, size_t c_pos, char* content);
 
 void compile_inline(char *content, size_t position, size_t len_content, Token *t, char* buffer);
 
-void compile_header(char *content, size_t position, size_t len_content, Token *t, char* buffer);
+void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos);
 
 void compile_text(char *content, size_t position, size_t len_content, Token *t);
 
