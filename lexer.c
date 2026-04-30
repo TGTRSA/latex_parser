@@ -157,9 +157,10 @@ void lex_content(char *content, token_container *container){
             {
                 Token t;
                 printf("[DEBUG] Possible header found\n");
-                ssize_t header_end_pos = is_header(len_content,pos,content);
-                if(header_end_pos>=0){
-
+                ssize_t rc = is_header(len_content,pos,content);
+                
+                if(rc>=0){
+                    size_t header_end_pos = (size_t)rc; 
                     char* buf = init_buf(pos,header_end_pos);
                     printf("[DEBUG] Initial pos %zu: \n\tNew pos: %zu\n", pos, header_end_pos);
 
@@ -181,11 +182,11 @@ void lex_content(char *content, token_container *container){
             case '$':
             {
                 Token t;
-                ssize_t end_pos  = is_inline_eq(len_content,pos, content);
+                ssize_t rc  = is_inline_eq(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
 
-                if(end_pos>=0){    
-
+                if(rc>=0){    
+                    size_t end_pos = (size_t)rc;
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
 
@@ -211,10 +212,10 @@ void lex_content(char *content, token_container *container){
             case '!':
             {
                 Token t;
-                ssize_t end_pos  = is_cmd(len_content,pos, content);
+                ssize_t rc  = is_cmd(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
-                if(end_pos>=0){    
-
+                if(rc>=0){    
+                    size_t end_pos = (size_t)rc;
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
 
