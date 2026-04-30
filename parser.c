@@ -1,5 +1,6 @@
 #include "parse.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -108,13 +109,27 @@ void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, s
         initial_pos+=1;
         buffer_indx++;
     }
+    printf("[DEBUG] About to free buffer at %p\n", buffer);
+    printf("t.data: %p, buf: %p\n", t->data, buffer);                    
+    free(buffer);
+    printf("[DEBUG] Freed buffer\n");
     strcpy(t->data,buffer);
 }
     
 
-void compile_text(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos){
+void compile_text(char *content, Token *t,  size_t *c_pos, size_t len_content){
+    printf("\t\t\t[DEBUG] In function compile_text()\n");
     size_t buffer_indx = 0;
-    while(initial_pos != end_pos){
+    size_t initial_pos = *c_pos;    
+    while(*c_pos < len_content){
+        if(content[*c_pos] == ' '){
+            break;
+        }
+        (*c_pos)++;
+    }
+    size_t e_pos = *c_pos;
+    char* buffer = init_buf(initial_pos, e_pos);
+    while(initial_pos != *c_pos){
         buffer[buffer_indx] = content[initial_pos];
         // printf("Current buffer: %s\n", buffer);
         initial_pos+=1;
@@ -140,18 +155,22 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
         initial_pos+=1;
         buffer_indx++;
     }
+    printf("Buffer: %s\n", buffer);
+    printf("[DEBUG] About to free buffer at %p\n", buffer);
+    printf("t.data: %p(p) %s(s), buf: %p\n", t->data, t->data, buffer);
     strcpy(t->data,buffer);
+    free(buffer);
+    printf("[DEBUG] Freed buffer\n");
 };
 
 // @ brief a lexing function that identifies individual characters and compiles them using subsequent commands
 // each compile command does parsing as well as tokenizing
 // @ param content: the full content of the file/text
-void lex_content(char *content){
+void lex_content(char *content, token_container *container){
     size_t len_content, pos;
     len_content = strlen(content);
-    size_t n_tokens = 0;
-    token_container container; 
-    container.tokens = (malloc( len_content * sizeof(Token)));
+    size_t n_tokens = 0; 
+    container->tokens = (malloc( len_content * sizeof(Token)));
     // Token token_array[len_content/2];
     size_t buffer_indx = 0;
     
@@ -172,10 +191,6 @@ void lex_content(char *content){
 
                     printf("\t[DEBUG]End pos content[%zu]: %c\n\n", header_end_pos, content[header_end_pos]);
 
-                    printf("[DEBUG] About to free buffer at %p\n", buf);
-                    printf("t.data: %p, buf: %p\n", t.data, buf);
-                    free(buf);
-                    printf("[DEBUG] Freed buffer\n");
                     t.attrib = HEADER;         
                     if(header_end_pos!=len_content && len_content != header_end_pos +1 ){
                         pos = header_end_pos+1;
@@ -183,7 +198,7 @@ void lex_content(char *content){
                 }else{
                     ;
                 }
-                container.tokens[buffer_indx] = t;
+                container->tokens[buffer_indx] = t;
                 buffer_indx = buffer_indx + 1;
                 break;
             }
@@ -200,10 +215,6 @@ void lex_content(char *content){
 
                     char* buf = init_buf(pos,end_pos); 
                     compile_command(content,&t,buf,  pos, end_pos);
-                    printf("[DEBUG] About to free buffer at %p\n", buf);
-                    printf("t.data: %p, buf: %p\n", t.data, buf);                    
-                    free(buf);
-                    printf("[DEBUG] Freed buffer\n");
 
                     printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
 
@@ -217,8 +228,8 @@ void lex_content(char *content){
                     ;
                 }       
                 printf("Equation data: %s\n\n", t.data);
-                // container[buffer_indx] = t;
-                // buffer_indx = buffer_indx + 1;                
+                container->tokens[buffer_indx] = t;
+                buffer_indx = buffer_indx + 1;                
                 break;
             }
             case '!':
@@ -233,12 +244,6 @@ void lex_content(char *content){
 
                     char* buf = init_buf(pos,end_pos); 
                     compile_command(content,&t,buf,  pos, end_pos);
-                    printf("[DEBUG] About to free buffer at %p\n", buf);
-                    printf("t.data: %p, buf: %p\n", t.data, buf);
-                    
-                    free(buf);
-                
-                    printf("[DEBUG] Freed buffer\n");
                     printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
 
                     t.attrib = BLOCK_EQ;
@@ -250,7 +255,7 @@ void lex_content(char *content){
                 }else {
                     printf("[DEBUG] Not a header at %zu \n\n", pos);
                 }       
-                container.tokens[buffer_indx] = t;
+                container->tokens[buffer_indx] = t;
                 buffer_indx = buffer_indx + 1;
 
                 printf("Block equation data: %s\n\n", t.data);
@@ -261,16 +266,22 @@ void lex_content(char *content){
             }
             default:
             {
-                ;
-
+                if(content[pos]== ' '){
+                    break;
+                }
+                Token t;
+                compile_text(content, &t, &pos, len_content);
+                container->tokens[buffer_indx] = t;
+                buffer_indx++;
+                printf("\t\t\t[DEBUG]Left function\n\n");                
             }
         }
     }
 
-    container.tokens = realloc(container.tokens,(n_tokens+1) * sizeof(Token));
+    container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
 
-    container.tokens[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
-    printf("container[1]: %s\n", container.tokens[1].data);
+    container->tokens[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
+    printf("container[3]: %s\n", container->tokens[1].data);
     // int i;
     // for(i=0;i<n_tokens;i++){
     //     printf("container[%i]: %s\n", i, container[i].data);
