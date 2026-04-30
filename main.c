@@ -13,6 +13,7 @@ char *l3 = "#include{chemfig}\n"
 int main() {
     printf("Hello new program\n");
     printf("Length of string: %zu\n", strlen(l2));
+    printf("The string in question:\n%s\n", l2);
     lex_content(l2);
 }
 
