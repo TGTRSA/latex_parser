@@ -1,4 +1,4 @@
-#include "parse.h"
+#include "lexer.h"
 
 char *latex_content = "#include {chemfig}\n"
                       "This is some very basic latex ! \\int_C x^2 dx !\n";
@@ -12,9 +12,11 @@ char *l3 = "#include{chemfig}\n"
 
 int main() {
     printf("Hello new program\n");
+    token_container token_list;
     printf("Length of string: %zu\n", strlen(l3));
     printf("The string in question:\n%s\n", l3);
-    lex_content(l3);
+    lex_content(l3 ,&token_list);
+
 }
 
 

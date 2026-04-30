@@ -1,5 +1,5 @@
-#ifndef PARSE
-#define PARSE
+#ifndef LEXER
+#define LEXER
 #include <sys/types.h>
 #pragma once
 #include "stddef.h"

@@ -1,14 +1,4 @@
-#include "parse.h"
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-// #include <memory>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
+#include "lexer.h"
 
 ssize_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
     printf("[DEBUG] Checking if command\n");
