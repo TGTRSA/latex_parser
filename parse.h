@@ -36,7 +36,7 @@ void compile_inline(char *content, size_t position, size_t len_content, Token *t
 
 void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos);
 
-void compile_text(char *content, size_t position, size_t len_content, Token *t);
+void compile_text(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos);
 
 void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos);
 

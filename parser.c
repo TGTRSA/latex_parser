@@ -112,13 +112,7 @@ void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, s
 }
     
 
-void compile_text(char *content, size_t position, size_t len_content, Token *t){
-
-}
-
-
-void compile_token(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos){
-    initial_pos++;
+void compile_text(char *content, Token *t, char* buffer, size_t initial_pos, size_t end_pos){
     size_t buffer_indx = 0;
     while(initial_pos != end_pos){
         buffer[buffer_indx] = content[initial_pos];
@@ -149,8 +143,11 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
 void lex_content(char *content){
     size_t len_content, pos;
     len_content = strlen(content);
-
+    int n_tokens;
+    Token *container = (Token *)(malloc(len_content/2));
+    size_t buffer_indx = 0;
     for(pos = 0; pos<len_content; pos++){
+        n_tokens++;
         switch (content[pos]) {
             case '#':
             {
@@ -162,11 +159,16 @@ void lex_content(char *content){
                     printf("[DEBUG] Initial pos %zu: \n\tNew pos: %zu\n", pos, header_end_pos);
                     compile_header(content, &t, buffer,pos,header_end_pos);
                     printf("\t[DEBUG]End pos content[%zu]: %c\n", header_end_pos, content[header_end_pos]);
+                    // buffer = " ";
                     free(buffer);
                     t.attrib = HEADER; 
+                    if(header_end_pos!=len_content && len_content != header_end_pos +1 ){
+                        pos = header_end_pos+2;
+                    }
                 }else{
                     ;
                 }
+                container[buffer_indx] = t;
                 break;
             }
             case '$':
@@ -191,6 +193,7 @@ void lex_content(char *content){
                     ;
                 }       
                 printf("Equation data: %s\n\n", t.data);
+                container[buffer_indx] = t;
                 break;
             }
             case '!':
@@ -214,19 +217,59 @@ void lex_content(char *content){
                 }else {
                     printf("[DEBUG] Not a header at %zu \n", pos);
                 }       
+                container[buffer_indx] = t;
                 printf("Block equation data: %s\n\n", t.data);
+                break;
+            }
+            case '\n':{
                 break;
             }
             default:
             {
-                // char* buf = init_buf(len_content,&pos);
-                // while(content[pos]!=' '){
-                //     buf+= content[pos];
-                // }
-                // printf("buffer: %s\n", buf);
-                // printf("Normal \n");
-                ;
+                Token t;
+                size_t i_pos=pos;
+                while(content[pos]!=' '){
+                    pos++;
+                    // buf+= content[pos];
+                }
+                char* buf = init_buf( i_pos, pos);
+                compile_text(content,  &t,buf, i_pos, pos);
+                t.attrib = TEXT;
+                printf("buffer: %s\n", buf);
+                free(buf);
+                container[buffer_indx] = t;                
             }
+        }
+    }
+
+    container = realloc(container,n_tokens+1);
+    container[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
+    printf("container[0]: %s\n", container[0].data);
+    int i;
+    for(i=0;i<n_tokens+1;i++){
+        switch (container[i].attrib) {
+            case HEADER:
+            {
+                printf("HEADER(%s)", container[i].data);
+                break;
+            }
+            case INLINE_EQ:{
+                printf("INLINE_EQ(%s)", container[i].data);
+                break;
+            }
+            case BLOCK_EQ:{
+                printf("BLOCK_EQ(%s)", container[i].data);
+                break;
+            }
+            case NEW_LINE:{
+                printf("NEW_LINE(%s)", container[i].data);
+                break;
+            }
+            default :{
+                printf("TEXT(%s)", container[i].data);
+                break;
+            }
+            
         }
     }
 }
