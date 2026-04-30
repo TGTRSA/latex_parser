@@ -1,8 +1,10 @@
 #ifndef LEXER
 #define LEXER
+// #include <cstddef>
 #include <sys/types.h>
 #pragma once
 #include "stddef.h"
+#include "stdint.h"
 #include "stdlib.h"
 #include "stdio.h"
 #include "math.h"
@@ -31,11 +33,13 @@ typedef struct TokenContainer {
     Token* tokens;
 }token_container;
 
-ssize_t is_header(size_t content_len, size_t c_pos, char* content);
+char* init_buf(size_t i_pos, size_t end_pos);
 
-ssize_t is_cmd( size_t content_len, size_t c_pos, char* content);
+size_t is_header(size_t content_len, size_t c_pos, char* content);
 
-ssize_t is_inline_eq( size_t content_len, size_t c_pos, char* content);
+size_t is_cmd( size_t content_len, size_t c_pos, char* content);
+
+size_t is_inline_eq( size_t content_len, size_t c_pos, char* content);
 
 void compile_inline(char *content, size_t position, size_t len_content, Token *t, char* buffer);
 

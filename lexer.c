@@ -1,6 +1,9 @@
 #include "lexer.h"
+#include <stddef.h>
+#include <stdint.h>
 
-ssize_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
+
+size_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
     printf("[DEBUG] Checking if command\n");
     // *** Second bang proves that we are in fact working with a command
     size_t i = c_pos + 1;  // Start after current position
@@ -10,15 +13,15 @@ ssize_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
         if (ch == '$') {
             return i;
         } else if (ch == ',' || ch == '.' || ch == '\n') {
-            return -1;
+            return SIZE_MAX;
         }       
         i++;
     }
     
-    return -1;
+    return SIZE_MAX;
 }
 
-ssize_t is_cmd(size_t content_len, size_t c_pos, char* content){
+size_t is_cmd(size_t content_len, size_t c_pos, char* content){
     printf("[DEBUG] Checking if command\n");
     // *** Second bang proves that we are in fact working with a command
     size_t i = c_pos + 1;  // Start after current position
@@ -28,15 +31,15 @@ ssize_t is_cmd(size_t content_len, size_t c_pos, char* content){
         if (ch == '!') {
             return i;
         } else if (ch == ',' || ch == '.' || ch == '\n') {
-            return -1;
+            return SIZE_MAX;
         }       
         i++;
     }
     
-    return -1;
+    return SIZE_MAX;
 }
 
-ssize_t is_header(size_t content_len, size_t c_pos, char* content){
+size_t is_header(size_t content_len, size_t c_pos, char* content){
     printf("[DEBUG] Checking if command\n");
     // *** Second bang proves that we are in fact working with a command
     size_t i = c_pos + 1;  // Start after current position
@@ -46,12 +49,12 @@ ssize_t is_header(size_t content_len, size_t c_pos, char* content){
         if (ch == '}') {
             return i;
         } else if (ch == ',' || ch == '.' || ch == '\n') {
-            return -1;
+            return SIZE_MAX;
         }       
         i++;
     }
     
-    return -1;
+    return SIZE_MAX;
 }
 
 char* init_buf(size_t i_pos, size_t end_pos){
@@ -109,7 +112,7 @@ void compile_text(char *content, Token *t,  size_t *c_pos, size_t len_content){
         initial_pos+=1;
         buffer_indx++;
     }
-    t->data = malloc(strlen(buffer));
+    t->data = malloc(strlen(buffer)+1);
     strcpy(t->data,buffer);
     printf("buffer: %s\n\n", buffer);
     printf("t.data: %p (%s), buf: %p\n", t->data, t->data, buffer);
@@ -117,7 +120,7 @@ void compile_text(char *content, Token *t,  size_t *c_pos, size_t len_content){
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
     t->attrib = TEXT;
-};
+}
 
 // @ params uses the content of the full text
 //  current position in the text and the length of the full text
@@ -137,7 +140,7 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
     strcpy(t->data,buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
-};
+}
 
 // @ brief a lexing function that identifies individual characters and compiles them using subsequent commands
 // each compile command does parsing as well as tokenizing
@@ -157,10 +160,9 @@ void lex_content(char *content, token_container *container){
             {
                 Token t;
                 printf("[DEBUG] Possible header found\n");
-                ssize_t rc = is_header(len_content,pos,content);
+                size_t header_end_pos = is_header(len_content,pos,content);
                 
-                if(rc>=0){
-                    size_t header_end_pos = (size_t)rc; 
+                if(header_end_pos!=SIZE_MAX){
                     char* buf = init_buf(pos,header_end_pos);
                     printf("[DEBUG] Initial pos %zu: \n\tNew pos: %zu\n", pos, header_end_pos);
 
@@ -182,11 +184,10 @@ void lex_content(char *content, token_container *container){
             case '$':
             {
                 Token t;
-                ssize_t rc  = is_inline_eq(len_content,pos, content);
+                size_t end_pos  = is_inline_eq(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
 
-                if(rc>=0){    
-                    size_t end_pos = (size_t)rc;
+                if(end_pos!=SIZE_MAX){    
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
 
@@ -212,10 +213,9 @@ void lex_content(char *content, token_container *container){
             case '!':
             {
                 Token t;
-                ssize_t rc  = is_cmd(len_content,pos, content);
+                size_t end_pos  = is_cmd(len_content,pos, content);
                 printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
-                if(rc>=0){    
-                    size_t end_pos = (size_t)rc;
+                if(end_pos!=SIZE_MAX){    
                     printf(GREEN "Command Token found\n"RESET);
                     printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
 
@@ -257,10 +257,11 @@ void lex_content(char *content, token_container *container){
 
     container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
 
-    container->tokens[n_tokens] = (struct Token){.data = "\0", .attrib=TEXT};
+    container->tokens[n_tokens].data = malloc(1);
+    container->tokens[n_tokens].data[0] = '\0';
+    container->tokens[n_tokens].attrib = TEXT;
     printf("container[3]: %s\n", container->tokens[1].data);
-    int i;
-    for(i=0;i<n_tokens+1;i++){
+    for(size_t i=0;i<n_tokens+1;i++){
         switch (container->tokens[i].attrib) {
             case HEADER:
             {
