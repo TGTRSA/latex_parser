@@ -1,12 +1,12 @@
 #include "lexer.h"
 #include "parser.h"
 
-char *latex_content = "#include {chemfig}\n"
+char *latex_content = "#{chemfig}\n"
                       "This is some very basic latex ! \\int_C x^2 dx !\n";
 
 char *l2 = "This is a latex command block ! \\int !\n"
             "This is the second paragraph $ \\int c dx $\n";
-char *l3 = "#include{chemfig}\n"
+char *l3 = "#{chemfig}\n"
             "This is a latex command block ! \\int !\n"
             "This is the second paragraph $ \\int c dx $\n";
 

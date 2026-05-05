@@ -153,115 +153,38 @@ void lex_content(char *content, token_container *container){
     // Token token_array[len_content/2];
     size_t buffer_indx = 0;
     
-    for(pos = 0; pos<len_content; pos++){
+    for (pos = 0; pos < len_content; pos++) {
         n_tokens++;
         char c = content[pos];
-        printf("%d\n",c);
-        if(c==10){
+        printf("%d\n", c);
+
+        if (c == '\n') {
             Token t;
             printf("\t\t\t\t\tFOUND NEW LINE\n");
-            t.data="\\n";
-            t.attrib=NEW_LINE;
+            t.data = "\\n";
+            t.attrib = NEW_LINE;
+
             container->tokens[buffer_indx] = t;
             buffer_indx++;
-            
         }
-        switch (c) {
-            case '#':
-            {
-                Token t;
-                printf("[DEBUG] Possible header found\n");
-                size_t header_end_pos = is_header(len_content,pos,content);
-                
-                if(header_end_pos!=SIZE_MAX){
-                    char* buf = init_buf(pos,header_end_pos);
-                    printf("[DEBUG] Initial pos %zu: \n\tNew pos: %zu\n", pos, header_end_pos);
+        else if (c == '#') {
+            Token t;
+            printf("[DEBUG] Possible header found\n");
 
-                    compile_header(content, &t, buf,pos,header_end_pos);
-
-                    printf("\t[DEBUG]End pos content[%zu]: %c\n\n", header_end_pos, content[header_end_pos]);
-
-                    t.attrib = HEADER;         
-                    if(header_end_pos!=len_content && len_content != header_end_pos +1 && content[header_end_pos +1 ] != '\n'){
-                        pos = header_end_pos+1;
-                    }
-                }else{
-                    ;
-                }
-                container->tokens[buffer_indx] = t;
-                buffer_indx = buffer_indx + 1;
-                break;
-            }
-            case '$':
-            {
-                Token t;
-                size_t end_pos  = is_inline_eq(len_content,pos, content);
-                printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
-
-                if(end_pos!=SIZE_MAX){    
-                    printf(GREEN "Command Token found\n"RESET);
-                    printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
-
-                    char* buf = init_buf(pos,end_pos); 
-                    compile_command(content,&t,buf,  pos, end_pos);
-
-                    printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
-
-                    t.attrib = INLINE_EQ;
-                    
-                    if(end_pos != len_content && end_pos + 1 != len_content){
-                        pos = end_pos + 1;
-                    }
-                    // Should print empty space or random char
-                }else {
-                    ;
-                }       
-                printf("Equation data: %s\n\n", t.data);
-                container->tokens[buffer_indx] = t;
-                buffer_indx = buffer_indx + 1;                
-                break;
-            }
-            case '!':
-            {
-                Token t;
-                size_t end_pos  = is_cmd(len_content,pos, content);
-                printf("\t[DEBUG]\tcontent[%zu]: %c\n", pos, content[pos]);
-                if(end_pos!=SIZE_MAX){    
-                    printf(GREEN "Command Token found\n"RESET);
-                    printf("Initial pos %zu: \n\tNew pos: %zu\n", pos, end_pos);
-
-                    char* buf = init_buf(pos,end_pos); 
-                    compile_command(content,&t,buf,  pos, end_pos);
-                    printf("\t[DEBUG]End pos content[%zu]: %c\n", end_pos, content[end_pos]);
-
-                    t.attrib = BLOCK_EQ;
-                    
-                    if(end_pos != len_content && end_pos + 1 != len_content){
-                        pos = end_pos + 1;
-                    }
-                    // Should print empty space or random char
-                }else {
-                    printf("[DEBUG] Not a header at %zu \n\n", pos);
-                }       
-                container->tokens[buffer_indx] = t;
-                buffer_indx = buffer_indx + 1;
-
-                printf("Block equation data: %s\n\n", t.data);
-                break;
-            }
-            default:
-            {
-                if(content[pos]== ' '){
-                    break;
-                }
-                Token t;
-                compile_text(content, &t, &pos, len_content);
-                container->tokens[buffer_indx] = t;
-                buffer_indx++;
-                printf("\t\t\t[DEBUG]Left function\n\n");                
+        }
+        else if (c == '$') {
+            Token t;
+        }
+        else if (c == '!') {
+            Token t;
+        }
+        else {
+            if (content[pos] == ' ') {
+                continue;
             }
         }
     }
+
 
     container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
     container->length = n_tokens+1;
