@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 
 size_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
@@ -45,7 +46,6 @@ size_t is_header(size_t content_len, size_t c_pos, char* content){
     size_t i = c_pos + 1;  // Start after current position
     while (i < content_len) {
         char ch = content[i];
-        
         if (ch == '}') {
             return i;
         } else if (ch == ',' || ch == '.' || ch == '\n') {
@@ -158,24 +158,27 @@ void lex_content(char *content, token_container *container){
         char c = content[pos];
         printf("%d\n", c);
 
-        if (c == '\n') {
+        if (c =='\n') {
             Token t;
-            printf("\t\t\t\t\tFOUND NEW LINE\n");
-            t.data = "\\n";
-            t.attrib = NEW_LINE;
-
-            container->tokens[buffer_indx] = t;
-            buffer_indx++;
+            printf("FOUND NEW LINE\n");
         }
         else if (c == '#') {
             Token t;
+            // size_t i = pos;
             printf("[DEBUG] Possible header found\n");
-
+            size_t new_pos = is_header(len_content, pos, content);
+            if (new_pos!=SIZE_MAX) {
+                char *buf = init_buf(pos,  new_pos);
+                compile_header(content, &t,buf, pos,new_pos);
+            }
+            printf("HEADER: %s\n", t.data);
         }
         else if (c == '$') {
+            printf("[DEBUG] Possible inline found\n");
             Token t;
         }
         else if (c == '!') {
+            printf("[DEBUG] Possible block equation\n");
             Token t;
         }
         else {
@@ -186,12 +189,12 @@ void lex_content(char *content, token_container *container){
     }
 
 
-    container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
-    container->length = n_tokens+1;
-    container->tokens[n_tokens].data = malloc(1);
-    container->tokens[n_tokens].data[0] = '\0';
-    container->tokens[n_tokens].attrib = TEXT;
-    printf("container[3]: %s\n", container->tokens[1].data);
+    // container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
+    // container->length = n_tokens+1;
+    // container->tokens[n_tokens].data = malloc(1);
+    // container->tokens[n_tokens].data[0] = '\0';
+    // container->tokens[n_tokens].attrib = TEXT;
+    // printf("container[3]: %s\n", container->tokens[1].data);
     // for(size_t i=0;i<n_tokens+1;i++){
     //     switch (container->tokens[i].attrib) {
     //         case HEADER:
