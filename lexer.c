@@ -256,35 +256,35 @@ void lex_content(char *content, token_container *container){
     }
 
     container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
-
+    container->length = n_tokens+1;
     container->tokens[n_tokens].data = malloc(1);
     container->tokens[n_tokens].data[0] = '\0';
     container->tokens[n_tokens].attrib = TEXT;
     printf("container[3]: %s\n", container->tokens[1].data);
-    for(size_t i=0;i<n_tokens+1;i++){
-        switch (container->tokens[i].attrib) {
-            case HEADER:
-            {
-                printf("HEADER(%s)\n", container->tokens[i].data);
-                break;
-            }
-            case INLINE_EQ:{
-                printf("INLINE_EQ(%s)\n", container->tokens[i].data);
-                break;
-            }
-            case BLOCK_EQ:{
-                printf("BLOCK_EQ(%s)\n", container->tokens[i].data);
-                break;
-            }
-            case NEW_LINE:{
-                printf("NEW_LINE(%s)\n", container->tokens[i].data);
-                break;
-            }
-            default :{
-                printf("TEXT(%s)\n", container->tokens[i].data);
-                break;
-            }
+    // for(size_t i=0;i<n_tokens+1;i++){
+    //     switch (container->tokens[i].attrib) {
+    //         case HEADER:
+    //         {
+    //             printf("HEADER(%s)\n", container->tokens[i].data);
+    //             break;
+    //         }
+    //         case INLINE_EQ:{
+    //             printf("INLINE_EQ(%s)\n", container->tokens[i].data);
+    //             break;
+    //         }
+    //         case BLOCK_EQ:{
+    //             printf("BLOCK_EQ(%s)\n", container->tokens[i].data);
+    //             break;
+    //         }
+    //         case NEW_LINE:{
+    //             printf("NEW_LINE(%s)\n", container->tokens[i].data);
+    //             break;
+    //         }
+    //         default :{
+    //             printf("TEXT(%s)\n", container->tokens[i].data);
+    //             break;
+    //         }
             
-        }
-    }
+    //     }
+    // }
 }
