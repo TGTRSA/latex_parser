@@ -12,7 +12,7 @@ size_t is_inline_eq(size_t content_len, size_t c_pos, char* content){
         
         if (ch == '$') {
             return i;
-        } else if (ch == ',' || ch == '.' || ch == '\n') {
+        } else if (ch == ',' || ch == '.') {
             return SIZE_MAX;
         }       
         i++;
@@ -30,7 +30,7 @@ size_t is_cmd(size_t content_len, size_t c_pos, char* content){
         
         if (ch == '!') {
             return i;
-        } else if (ch == ',' || ch == '.' || ch == '\n') {
+        } else if (ch == ',' || ch == '.') {
             return SIZE_MAX;
         }       
         i++;
@@ -155,7 +155,18 @@ void lex_content(char *content, token_container *container){
     
     for(pos = 0; pos<len_content; pos++){
         n_tokens++;
-        switch (content[pos]) {
+        char c = content[pos];
+        printf("%d\n",c);
+        if(c==10){
+            Token t;
+            printf("\t\t\t\t\tFOUND NEW LINE\n");
+            t.data="\\n";
+            t.attrib=NEW_LINE;
+            container->tokens[buffer_indx] = t;
+            buffer_indx++;
+            
+        }
+        switch (c) {
             case '#':
             {
                 Token t;
@@ -171,7 +182,7 @@ void lex_content(char *content, token_container *container){
                     printf("\t[DEBUG]End pos content[%zu]: %c\n\n", header_end_pos, content[header_end_pos]);
 
                     t.attrib = HEADER;         
-                    if(header_end_pos!=len_content && len_content != header_end_pos +1 ){
+                    if(header_end_pos!=len_content && len_content != header_end_pos +1 && content[header_end_pos +1 ] != '\n'){
                         pos = header_end_pos+1;
                     }
                 }else{
@@ -236,9 +247,6 @@ void lex_content(char *content, token_container *container){
                 buffer_indx = buffer_indx + 1;
 
                 printf("Block equation data: %s\n\n", t.data);
-                break;
-            }
-            case '\n':{
                 break;
             }
             default:

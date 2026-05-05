@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +44,10 @@ void compile_tex(token_container *container){
     size_t i;    
     for(i=0;i<container->length;i++){
         Token t = container->tokens[i] ;
+        if(t.attrib!=HEADER && header_written==false){
+            header_written=true;
+            strcat(latex_code, begin_doc);
+        }
         switch (t.attrib) {
             case HEADER:
             {
@@ -52,23 +57,31 @@ void compile_tex(token_container *container){
                 break;
             }
             case INLINE_EQ:{
+                sprintf(t.data," %s ", t.data);
                 printf("INLINE_EQ(%s)\n",t.data);
+                strcat(latex_code,t.data);
                 break;
             }
             case BLOCK_EQ:{
+                sprintf(t.data," %s ", t.data);
                 printf("BLOCK_EQ(%s)\n",t.data);
+                strcat(latex_code,t.data);
                 break;
             }
             case NEW_LINE:{
+                sprintf(t.data,"%s", t.data);
                 printf("NEW_LINE(%s)\n",t.data);
                 break;
             }
             default :{
                 printf("TEXT(%s)\n",t.data);
+                sprintf(t.data,"%s ", t.data);
+                strcat(latex_code,t.data);
                 break;
             }
             
         }
     }
-
+    strcat(latex_code,end_doc);
+    printf("CODE: \n%s", latex_code);
 }
