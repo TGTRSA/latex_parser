@@ -6,7 +6,7 @@
 //return (
         //     "\\documentclass{article}\n"
         //     "\\usepackage[utf8]{inputenc}\n"
-        //     "\\usepackage{amsmath}\n"
+        //     "\\usepackage{amsmath}\n"        
         //     "\\usepackage{amssymb}\n"
         //     "\\usepackage{tikz}\n"
         //     "\\usepackage{pgfplots}\n"

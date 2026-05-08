@@ -41,66 +41,72 @@ void write_header(Token *t) {
     // free(full_tex);
 }
 
+void write_token(Token *t, char* doc_content, char* buffer){
+
+}
+
 void compile_tex(token_container *container){
     char* doc_cont = (char * ) malloc(sizeof(char)  * strlen(latex_code) +  1);
     strcpy(doc_cont, latex_code);
-    doc_cont[strlen(latex_code)] = '\0';
     size_t len_tracker = strlen(doc_cont);
+    doc_cont[strlen(latex_code)] = '\0';
+    
     printf("\n[DEBUG] In parser.h:\n");
+    printf("[DEBUF] Original length of doc_content buffer: %zu\n", sizeof(doc_cont));
+    printf("[DEBUG] Len of token container: %zu\n", container->length);
+    
     size_t i;    
     for(i=0;i<container->length;i++){
         Token t = container->tokens[i] ;
         if(t.attrib!=HEADER && header_written==false){
             header_written=true;
-            // size_t add_len= strlen(begin_doc);
-            // len_tracker += add_len;
-            // doc_cont = realloc(doc_cont,len_tracker);
-            // strcat(latex_code, begin_doc);
         }
         switch (t.attrib) {
             case HEADER:
             {
                 printf("HEADER(%s)\n",t.data);
                 write_header( &t);
-                // len_tracker += strlen(t.data);
-                // doc_cont = realloc(doc_cont,len_tracker);
                 break;
             }
             case INLINE_EQ:{
-                sprintf(t.data," %s ", t.data);
+                char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + 3);
+                sprintf(small_buffer," %s ", t.data);
                 printf("INLINE_EQ(%s)\n",t.data);
-                // len_tracker += strlen(t.data);
-                // doc_cont = realloc(doc_cont,len_tracker);
-                // strcat(doc_cont,t.data);
+                
                 break;
             }
             case BLOCK_EQ:{
-                sprintf(t.data," %s ", t.data);
+                size_t spaces = 3;
+                char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + spaces);
+                sprintf(small_buffer," %s ", t.data);
                 printf("BLOCK_EQ(%s)\n",t.data);
-                // len_tracker += strlen(t.data);
-                // doc_cont = realloc(doc_cont,len_tracker);
-                // strcat(doc_cont,t.data);
+                printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
+
+                
                 break;
             }
             case NEW_LINE:{
-                sprintf(t.data,"%s", t.data);
+                char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data));
+                sprintf(small_buffer,"%s", t.data);
                 printf("NEW_LINE(%s)\n",t.data);
-                // len_tracker += strlen(t.data);
-                // doc_cont = realloc(doc_cont,len_tracker);
-                // strcat(doc_cont,t.data);
+                len_tracker = len_tracker + sizeof(char) * strlen(t.data);
+                printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
+
+                
                 break;
             }
             default :{
+                size_t spaces = 3;
                 printf("TEXT(%s)\n",t.data);
-                sprintf(t.data,"%s ", t.data);
-                // len_tracker += strlen(t.data);
-                // doc_cont = realloc(doc_cont,len_tracker);
-                // strcat(doc_cont,t.data);
+                char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + spaces);
+                sprintf(small_buffer,"%s ", t.data);
+
                 break;
             }
             
         }
     }
     strcat(doc_cont,end_doc);
+    printf("[DEBUG] New len doc_content buffer: %zu\n", sizeof(doc_cont));
     printf("CODE: \n%s", doc_cont);
 }

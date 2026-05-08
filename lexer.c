@@ -220,8 +220,8 @@ void lex_content(char *content, token_container *container){
     }
 
 
-    // container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
-    // container->length = n_tokens+1;
+    container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
+    container->length = n_tokens+1;
     // container->tokens[n_tokens].data = malloc(1);
     // container->tokens[n_tokens].data[0] = '\0';
     // container->tokens[n_tokens].attrib = TEXT;
