@@ -156,35 +156,66 @@ void lex_content(char *content, token_container *container){
     for (pos = 0; pos < len_content; pos++) {
         n_tokens++;
         char c = content[pos];
-        printf("%d\n", c);
+        // printf("%d\n", c);
 
         if (c =='\n') {
             Token t;
             printf("FOUND NEW LINE\n");
+            t.data = "\n";
+            t.attrib = NEW_LINE;
+            container->tokens[buffer_indx] = t;
+            buffer_indx++;
         }
         else if (c == '#') {
             Token t;
             // size_t i = pos;
             printf("[DEBUG] Possible header found\n");
-            size_t new_pos = is_header(len_content, pos, content);
-            if (new_pos!=SIZE_MAX) {
-                char *buf = init_buf(pos,  new_pos);
-                compile_header(content, &t,buf, pos,new_pos);
+            size_t end_pos = is_header(len_content, pos, content);
+            if (end_pos!=SIZE_MAX) {
+                char *buf = init_buf(pos,  end_pos);
+                compile_header(content, &t,buf, pos,end_pos);
+                container->tokens[buffer_indx] = t;
+                buffer_indx++;
+                printf("HEADER: %s\n", t.data);
             }
-            printf("HEADER: %s\n", t.data);
+            // pos=end_pos+1;
+            
         }
         else if (c == '$') {
-            printf("[DEBUG] Possible inline found\n");
             Token t;
+            printf("[DEBUG] Possible inline found\n");
+            size_t end_pos = is_inline_eq(len_content, pos,content);
+            if (end_pos!=SIZE_MAX){
+                char* buf = init_buf(pos,  end_pos);
+                compile_command(content, &t,  buf,pos, end_pos);
+                container->tokens[buffer_indx] = t;
+                buffer_indx++;
+                printf("Inline eqution: %s\n", t.data);
+            }
+            // pos=end_pos+1;
         }
         else if (c == '!') {
             printf("[DEBUG] Possible block equation\n");
             Token t;
+            size_t new_pos = is_cmd(len_content, pos, content);
+            if (new_pos!=SIZE_MAX) {
+                char *buf = init_buf(pos,  new_pos);
+                compile_command(content, &t,buf, pos,new_pos);
+                container->tokens[buffer_indx] = t;
+                buffer_indx++;
+            }
+            // pos = new_pos+1;
+            printf("EQUATION: %s\n", t.data);
         }
         else {
             if (content[pos] == ' ') {
                 continue;
             }
+            Token t;
+            compile_text(content,&t,&pos, len_content);
+            container->tokens[buffer_indx] = t;
+            buffer_indx++;
+
         }
     }
 
