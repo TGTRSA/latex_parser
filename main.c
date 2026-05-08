@@ -17,7 +17,7 @@ int main() {
     printf("Length of string: %zu\n", strlen(l3));
     printf("The string in question:\n%s\n", l3);
     lex_content(l3 ,&tokens);
-    // compile_tex(&tokens);
+    compile_tex(&tokens);
 }
 
 
