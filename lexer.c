@@ -177,6 +177,7 @@ void lex_content(char *content, token_container *container){
                 container->tokens[buffer_indx] = t;
                 buffer_indx++;
                 printf("HEADER: %s\n", t.data);
+                pos = end_pos;
             }
             // pos=end_pos+1;
             
@@ -190,6 +191,7 @@ void lex_content(char *content, token_container *container){
                 compile_command(content, &t,  buf,pos, end_pos);
                 container->tokens[buffer_indx] = t;
                 buffer_indx++;
+                pos = end_pos;
                 printf("Inline eqution: %s\n", t.data);
             }
             // pos=end_pos+1;
@@ -203,6 +205,7 @@ void lex_content(char *content, token_container *container){
                 compile_command(content, &t,buf, pos,new_pos);
                 container->tokens[buffer_indx] = t;
                 buffer_indx++;
+                pos = new_pos;
             }
             // pos = new_pos+1;
             printf("EQUATION: %s\n", t.data);
@@ -213,9 +216,9 @@ void lex_content(char *content, token_container *container){
             }
             Token t;
             compile_text(content,&t,&pos, len_content);
+            printf("TEXT: %s\n", t.data);
             container->tokens[buffer_indx] = t;
             buffer_indx++;
-
         }
     }
 
