@@ -88,6 +88,7 @@ void compile_header(char *content, Token *t, char* buffer, size_t initial_pos, s
     printf("[DEBUG] About to free buffer at %p\n", buffer);
     printf("t.data: %p, buf: %p\n", t->data, buffer);                    
     t->data = malloc(strlen(buffer)+1);
+    t->attrib = HEADER;
     strcpy(t->data,buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
@@ -135,8 +136,9 @@ void compile_command(char *content, Token *t, char* buffer, size_t initial_pos, 
     }
     printf("Buffer: %s\n", buffer);
     printf("[DEBUG] About to free buffer at %p\n", buffer);
-    printf("t.data: %p(p) %s(s), buf: %p\n", t->data, t->data, buffer);
+    // printf("t.data: %p(p) %s(s), buf: %p\n", t->data, t->data, buffer);
     t->data = malloc(strlen(buffer)+1); 
+    
     strcpy(t->data,buffer);
     free(buffer);
     printf("[DEBUG] Freed buffer\n");
@@ -189,6 +191,7 @@ void lex_content(char *content, token_container *container){
             if (end_pos!=SIZE_MAX){
                 char* buf = init_buf(pos,  end_pos);
                 compile_command(content, &t,  buf,pos, end_pos);
+                t.attrib = INLINE_EQ;
                 container->tokens[buffer_indx] = t;
                 buffer_indx++;
                 pos = end_pos;
@@ -203,6 +206,7 @@ void lex_content(char *content, token_container *container){
             if (new_pos!=SIZE_MAX) {
                 char *buf = init_buf(pos,  new_pos);
                 compile_command(content, &t,buf, pos,new_pos);
+                t.attrib = BLOCK_EQ;
                 container->tokens[buffer_indx] = t;
                 buffer_indx++;
                 pos = new_pos;
@@ -224,7 +228,7 @@ void lex_content(char *content, token_container *container){
 
 
     container->tokens = realloc(container->tokens,(n_tokens+1) * sizeof(Token));
-    container->length = n_tokens+1;
+    container->length = n_tokens;
     // container->tokens[n_tokens].data = malloc(1);
     // container->tokens[n_tokens].data[0] = '\0';
     // container->tokens[n_tokens].attrib = TEXT;
