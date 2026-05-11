@@ -47,15 +47,21 @@ void compile_tex(token_container *container){
                         // create buffer for token data including spaces
                         char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + 3);
                         char* usepackage = "\n\\usepackage{}";
-                        char* header = (char *) malloc(sizeof(char) * (strlen(small_buffer)+ strlen(usepackage)));
+                        size_t buf_len = sizeof(char) * (strlen(small_buffer)+ strlen(usepackage));
+                        char* header = (char *) malloc(buf_len + 1);
+                        header[buf_len] = '\0';
                         sprintf(header," usepackage{%s} ", t.data); 
                         printf("HEADER(%s)\n",t.data);
                         printf("\t[DEBUG] HEADER: %s\n", header);
-                        len_tracker = len_tracker + sizeof(char) * strlen(header);
-                        printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
+                        len_tracker = len_tracker + strlen(header);
+                        printf("\t\t[DEBUG] doc should be: %zu\n", (len_tracker));
+                        doc_cont = realloc(doc_cont,len_tracker);
+                        printf("\t\t[DEBUG] The doc is: %zu\n", strlen(doc_cont));
+                        memcpy(doc_cont + strlen(doc_cont), header,len_tracker);
                         i++;
                     }else{
-                        header_written=true;
+                        len_tracker+=len_tracker+strlen(begin_doc);
+                        memcpy(doc_cont + strlen(doc_cont),begin_doc,len_tracker);
                         break;
                     }                        
                 }
