@@ -51,7 +51,8 @@ void compile_tex(token_container *container){
                         sprintf(header," usepackage{%s} ", t.data); 
                         printf("HEADER(%s)\n",t.data);
                         printf("\t[DEBUG] HEADER: %s\n", header);
-                        
+                        len_tracker = len_tracker + sizeof(char) * strlen(header);
+                        printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
                         i++;
                     }else{
                         header_written=true;
@@ -64,6 +65,7 @@ void compile_tex(token_container *container){
                 char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + 3);
                 sprintf(small_buffer," %s ", t.data);
                 printf("INLINE_EQ(%s)\n",t.data);
+                len_tracker = len_tracker + sizeof(char) * strlen(small_buffer);
                 printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
                 break;
             }
@@ -72,16 +74,15 @@ void compile_tex(token_container *container){
                 char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + spaces);
                 sprintf(small_buffer," %s ", t.data);
                 printf("BLOCK_EQ(%s)\n",t.data);
+                len_tracker = len_tracker + sizeof(char) * strlen(small_buffer);
                 printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
-
-                
                 break;
             }
             case NEW_LINE:{
                 char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data));
                 sprintf(small_buffer,"%s", t.data);
                 printf("NEW_LINE(%s)\n",t.data);
-                len_tracker = len_tracker + sizeof(char) * strlen(t.data);
+                len_tracker = len_tracker + sizeof(char) * strlen(small_buffer);
                 printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
 
                 
@@ -91,9 +92,9 @@ void compile_tex(token_container *container){
                 size_t spaces = 3;
                 printf("TEXT(%s)\n",t.data);
                 char* small_buffer = (char *)malloc(sizeof(char) * strlen(t.data) + spaces);
+                len_tracker = len_tracker + strlen(small_buffer);
                 printf("\t\t[DEBUG] doc should be: %zu\n", len_tracker);
                 sprintf(small_buffer,"%s ", t.data);
-
                 break;
             }
             
