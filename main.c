@@ -13,6 +13,7 @@ char *l3 = "#{chemfig}\n"
 
 int main() {
     printf("Hello new program\n");
+    printf("Running version %s %s\n", __DATE__,__TIME__);
     token_container tokens;
     printf("Length of string: %zu\n", strlen(l3));
     printf("The string in question:\n%s\n", l3);
