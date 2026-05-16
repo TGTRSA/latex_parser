@@ -9,7 +9,7 @@ char* latex_code = "\\documentclass{article}\n"
                     "\\usepackage[utf8]{inputenc}\n"
                     "\\usepackage{asmath}\n"
                     "\\usepackage{tikz}\n"
-                    "\\usepackage{geometry}";
+                    "\\usepackage{geometry}\n";
 
 const char* begin_doc  = "\n\\begin{document}\n";
 const char* end_doc    = "\n\\end{document}\n";
@@ -26,11 +26,11 @@ void write_header(Token *t, token_container *container, size_t *indx, size_t len
                 // create buffer for token data including spaces
                 char* small_buffer = (char *)malloc(sizeof(char) * strlen(t->data) + 3);
                 small_buffer[sizeof(char) * strlen(t->data) + 2] = '\0';
-                char* usepackage = "\n\\usepackage{}";
+                char* usepackage = "\\usepackage{}\n";
                 size_t buf_len = sizeof(char) * (strlen(small_buffer)+ strlen(usepackage));
                 char* header = (char *) malloc(buf_len + 1);
                 header[buf_len] = '\0';
-                sprintf(header," \n\\usepackage{%s} ", t->data); 
+                sprintf(header," \\usepackage{%s}\n", t->data); 
                 printf("HEADER(%s)\n",t->data);
                 printf("\t[DEBUG] HEADER: %s\n", header);
                 len_tracker = len_tracker + strlen(header);
